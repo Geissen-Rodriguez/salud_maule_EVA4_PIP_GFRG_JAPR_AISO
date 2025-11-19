@@ -78,7 +78,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gestion_pacientes',
         'USER': 'postgres',
-        'PASSWORD': '12345',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -130,3 +130,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'          # Redirige al inicio después de login
 LOGIN_URL = '/login/'             # URL del formulario de login
 LOGOUT_REDIRECT_URL = '/login/'   # Redirige al login después de logout
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "sandbox.smtp.mailtrap.io"
+EMAIL_HOST_USER = "5ecef2b7c96dee"
+EMAIL_HOST_PASSWORD = "6ebe05f56ddc51"
+EMAIL_PORT = "2525"
+EMAIL_USE_TLS = True
