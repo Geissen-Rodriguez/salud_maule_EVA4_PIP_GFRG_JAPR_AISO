@@ -1,14 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Acceso{% endblock %}
 {% block content %}
-<h2>Iniciar sesión</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Entrar</button>
-</form>
-<p>
-  ¿Olvidaste tu contraseña? 
-  <a href="{% url 'recuperacion' %}">Recuperar cuenta</a>
-</p>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Iniciar sesión</h4>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
+        <p class="mt-3 text-center">
+          ¿Olvidaste tu contraseña? 
+          <a href="{% url 'recuperacion' %}">Recuperar cuenta</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
