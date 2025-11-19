@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Token Generado{% endblock %}
+
+{% block content %}
+<h2>Token generado</h2>
+
+<p>Tu token de recuperación es: <strong>{{ token }}</strong></p>
+<p>Usa este token en la página de <a href="{% url 'recuperacion' %}">Recuperación de cuenta</a>.</p>
+{% endblock %}
