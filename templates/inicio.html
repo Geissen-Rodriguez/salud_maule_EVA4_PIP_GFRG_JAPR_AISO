@@ -1,6 +1,18 @@
 {% extends "Layout/base.html" %}
+{% load static %}
+
 {% block title %}Inicio{% endblock %}
+
 {% block content %}
-<h2>Bienvenido al sistema de gestión de pacientes</h2>
-<p>Este sistema es exclusivo para el personal de salud de la Región del Maule.</p>
+<div class="text-center mt-4">
+
+    <img src="{% static 'img/talca.svg' %}" 
+         alt="Logo Municipalidad de Talca"
+         style="max-width: 200px; height:auto;" 
+         class="mb-4">
+
+    <h2>Bienvenido al sistema de gestión de pacientes</h2>
+    <p>Este sistema es exclusivo para el personal de salud de la Región del Maule.</p>
+
+</div>
 {% endblock %}

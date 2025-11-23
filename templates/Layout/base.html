@@ -1,81 +1,126 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestión de Pacientes — Región del Maule{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Favicon / Icono de Pestaña -->
+    <!-- Se utiliza el mismo logo de navegación como icono de la pestaña -->
+    <link rel="icon" type="image/x-icon" href="{% static 'img/Logo.jpg' %}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
 </head>
-<body class="bg-light">
+<body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navbar Principal -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="{% url 'inicio' %}">
-                Gestión de Pacientes — Región del Maule
-            </a>
-            <span class="navbar-text text-white ms-3">
-                “Cuidamos tu salud, organizamos tu atención”
-            </span>
-            
-            {% if user.is_authenticated %}
-            <div class="d-flex align-items-center me-3 ms-auto">
-                <div class="text-end text-white small me-3">
-                    
-                    {% with perfil=user.perfil_salud %}
-                    {# user.perfil_salud accede a PersonalSalud gracias a related_name='perfil_salud' #}
-                    
-                    {# 1. Nombre y Apellido #}
-                    <span class="d-block fw-bold">
-                        {{ perfil.nombres }} {{ perfil.apellidos }}
-                    </span>
-                    
-                    {# 2. Cargo y Grupo #}
-                    <span class="d-block">
-                        Cargo: {{ perfil.cargo }}
-                    </span>
-                    
-                    {% endwith %}
-                    
+            <!-- Logo y Título -->
+            <div class="d-flex align-items-center">
+                <div class="logo-container me-3">
+                    <img src="{% static 'img/Logo.jpg' %}" 
+                        alt="Logo Hospital Regional del Maule" 
+                        class="navbar-logo"
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:3rem\'>🏥</span>';">
                 </div>
-            {% endif %}
-            
-            <div class="ms-auto">
-                {% if user.is_authenticated %}
-                    <form action="{% url 'logout' %}" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light">Salir</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-outline-light">Ingresar</a>
-                {% endif %}
+                <div>
+                    <a class="navbar-brand mb-0 h1" href="{% url 'inicio' %}">Gestión de Pacientes</a>
+                    <div class="text-white-50 small">Región del Maule</div>
+                </div>
             </div>
-            
-            {% if user.is_authenticated %}
-            </div> {# Cierra el div d-flex del usuario #}
-            {% endif %}
 
+            <!-- Toggle para móvil -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Contenido del navbar -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Tagline centrado -->
+                <div class="mx-auto d-none d-lg-block">
+                    <span class="text-white fst-italic">"Cuidamos tu salud, organizamos tu atención"</span>
+                </div>
+                
+                <!-- Usuario y botones -->
+                <div class="d-flex align-items-center ms-auto mt-2 mt-lg-0">
+                    {% if user.is_authenticated %}
+                        <div class="text-end me-3 d-none d-md-block">
+                            {% with perfil=user.perfil_salud %}
+                                <div class="text-white fw-semibold">
+                                    {{ perfil.nombres }} {{ perfil.apellidos }}
+                                </div>
+                                <div class="text-white-50 small">
+                                    {{ perfil.cargo }}
+                                </div>
+                            {% endwith %}
+                        </div>
+                        
+                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light">
+                                Salir
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-light">
+                            Ingresar
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </nav>
 
+    <!-- Mensajes del Sistema -->
     <div class="container mt-3">
         {% if messages %}
-            <div class="alert alert-info">
-                <ul class="mb-0">
-                    {% for m in messages %}
-                        <li>{{ m }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
+            {% for m in messages %}
+                <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ m }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
         {% endif %}
     </div>
 
-    <main class="container mt-4">
-        {% block content %}{% endblock %}
+    <!-- Contenido Principal -->
+    <main class="container py-4">
+        {% block content %}
+        <!-- Aquí va el contenido específico de cada página -->
+        {% endblock %}
     </main>
 
-    <footer class="bg-primary text-white text-center py-3 mt-5">
-        <small>© 2025 — Región del Maule</small>
+    <!-- Footer -->
+    <footer class="text-white text-center py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h6 class="fw-bold">Hospital Regional</h6>
+                    <p class="mb-0">Región del Maule</p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h6 class="fw-bold">Contacto</h6>
+                    <p class="mb-0">contacto@hospitalmaule.cl</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold">Emergencias</h6>
+                    <p class="mb-0">Numero 131</p>
+                </div>
+            </div>
+            <hr class="border-white-50 my-3">
+            <small>© 2025 — Gestión de Pacientes, Región del Maule</small>
+        </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

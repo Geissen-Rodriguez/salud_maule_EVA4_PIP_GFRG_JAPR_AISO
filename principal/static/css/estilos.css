@@ -1,0 +1,151 @@
+/* ================================================
+   ESTILOS PERSONALIZADOS - GESTIÓN DE PACIENTES
+   ================================================ */
+
+/* Logo circular personalizado */
+.logo-container {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 50%;
+    padding: 0.35rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-logo {
+    height: 70px;
+    width: 70px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+/* Gradiente personalizado para navbar */
+.navbar-custom {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+/* Footer personalizado */
+footer {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    margin-top: auto;
+}
+
+/* Layout de página completa */
+body {
+    min-height: 10vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Responsive - Ajustes adicionales si es necesario */
+@media (max-width: 768px) {
+    .navbar-logo {
+        height: 60px;
+        width: 60px;
+    }
+    
+    .logo-container {
+        padding: 0.3rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos para la página de login */
+
+/* Estilos para la imagen de fondo */
+.login-image-container {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.login-background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.95);
+}
+
+.login-image-caption {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  background: rgba(13, 110, 253, 0.9);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.login-image-caption h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.login-image-caption p {
+  margin: 0.5rem 0 0 0;
+}
+
+/* Estilos del formulario */
+.login-form-container {
+  background: #f8f9fa63;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.card {
+  border-radius: 16px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(13, 110, 253, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .login-form-container {
+    min-height: auto;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+

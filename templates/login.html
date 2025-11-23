@@ -1,24 +1,102 @@
 {% extends "Layout/base.html" %}
+{% load static %}
+
 {% block title %}Acceso{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow">
-      <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">Iniciar sesión</h4>
-      </div>
-      <div class="card-body">
-        <form method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit" class="btn btn-primary w-100">Entrar</button>
-        </form>
-        <p class="mt-3 text-center">
-          ¿Olvidaste tu contraseña? 
-          <a href="{% url 'password_reset' %}">Recuperar cuenta</a>
-        </p>
+<div class="container-fluid px-0">
+  <div class="row g-0 min-vh-100 align-items-center">
+    
+    <!-- Columna izquierda - Imagen del CESFAM -->
+    <div class="col-lg-7 d-none d-lg-block position-relative">
+      <div class="login-image-container">
+        <img src="{% static 'img/cesfam.jpeg' %}" 
+             alt="CESFAM La Florida" 
+             class="login-background-image">
+        <div class="login-image-caption">
+          <h3 class="text-white fw-bold">CESFAM La Florida</h3>
+          <p class="text-white-50">Atención Primaria de Salud - Región del Maule</p>
+        </div>
       </div>
     </div>
+
+    <!-- Columna derecha - Formulario de login -->
+    <div class="col-lg-5 col-12">
+      <div class="login-form-container p-4 p-lg-5">
+        <div class="mx-auto" style="max-width: 800px;">
+          
+          <!-- Logo y título principal -->
+          <div class="text-center mb-4">
+            <img src="{% static 'img/Logo.jpg' %}" 
+                 alt="Logo" 
+                 class="rounded-circle mb-3"
+                 style="width: 100px; height: 100px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <h3 class="fw-bold mb-2">Gestión de Pacientes</h3>
+            <p class="text-muted">Región del Maule</p>
+          </div>
+
+          <!-- Formulario -->
+          <div class="card border-0 shadow-lg">
+            <div class="card-body p-4">
+              <form method="post">
+                {% csrf_token %}
+                
+                <!-- Campo de usuario -->
+                <div class="mb-4">
+                  <label for="id_username" class="form-label fw-semibold">
+                    <i class="text-primary"></i> Usuario
+                  </label>
+                  <input type="text" 
+                         name="username" 
+                         id="id_username"
+                         class="form-control form-control-lg"
+                         placeholder="Ingresa tu usuario"
+                         required
+                         autofocus>
+                </div>
+
+                <!-- Campo de contraseña -->
+                <div class="mb-4">
+                  <label for="id_password" class="form-label fw-semibold">
+                    <i class="text-primary"></i> Contraseña
+                  </label>
+                  <input type="password" 
+                         name="password" 
+                         id="id_password"
+                         class="form-control form-control-lg"
+                         placeholder="Ingresa tu contraseña"
+                         required>
+                </div>
+
+                <!-- Botón de envío -->
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                  <span class="fw-semibold">Iniciar Sesión</span>
+                </button>
+
+                <!-- Recuperar contraseña -->
+                <div class="text-center">
+                  <a href="{% url 'password_reset' %}" class="text-decoration-none">
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="text-center mt-4">
+            <p class="text-muted small mb-1">
+              <i>🏥</i> CESFAM La Florida - Atención Primaria de Salud
+            </p>
+            <p class="text-muted small">
+              Para soporte técnico, contacta al administrador del sistema
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}
