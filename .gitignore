@@ -1,0 +1,27 @@
+# Archivos de compilación de Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Archivos de base de datos locales
+db.sqlite3
+
+# Migraciones (opcional: si prefieres regenerarlas siempre)
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Archivos estáticos generados
+/staticfiles/
+/media/
+
+# Archivos de configuración de VSCode / PyCharm
+.vscode/
+.idea/
+
+# Archivos de logs
+*.log
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
