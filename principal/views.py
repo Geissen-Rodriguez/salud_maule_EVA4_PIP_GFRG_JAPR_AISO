@@ -7,17 +7,22 @@ from django.views import View
 import uuid
 from .models import PersonalSalud, TokenRecuperacionCuenta
 
+
 class InicioView(TemplateView):
     template_name = "inicio.html"
+
 
 class AccesoView(LoginView):
     template_name = "login.html"
 
+
 class SalidaView(LogoutView):
     next_page = reverse_lazy('login')
 
+
 class RecuperacionView(TemplateView):
     template_name = "recuperacion.html"
+
     def post(self, request, *args, **kwargs):
         valor = request.POST.get('token')
         try:
@@ -29,11 +34,13 @@ class RecuperacionView(TemplateView):
             messages.error(request, "Token inválido o ya usado.")
         return redirect('recuperacion')
 
+
 class PerfilEditarView(UpdateView):
     model = PersonalSalud
     fields = ['cargo', 'correo_institucional']
     template_name = "perfil_editar.html"
     success_url = reverse_lazy('inicio')
+
 
 class SolicitarTokenView(View):
     def get(self, request):
@@ -41,10 +48,23 @@ class SolicitarTokenView(View):
 
     def post(self, request):
         rut = request.POST.get('rut')
+
         try:
-            usuario = PersonalSalud.objects.get(rut=rut)
-            token = str(uuid.uuid4())[:8]
-            TokenRecuperacionCuenta.objects.create(rut_usuario=usuario.rut, token=token, activo=True)
-            return render(request, 'token_generado.html', {'token': token})
+            persona = PersonalSalud.objects.get(rut=rut)
+
+            # Generar token
+            token_str = str(uuid.uuid4())[:8]
+
+            # Guardar token asociado al usuario
+            TokenRecuperacionCuenta.objects.create(
+                usuario=persona.usuario,
+                token=token_str,
+                activo=True
+            )
+
+            return render(request, 'token_generado.html', {'token': token_str})
+
         except PersonalSalud.DoesNotExist:
-            return render(request, 'solicitar_token.html', {'error': 'RUT no encontrado'})
+            return render(request, 'solicitar_token.html', {
+                'error': 'RUT no encontrado'
+            })

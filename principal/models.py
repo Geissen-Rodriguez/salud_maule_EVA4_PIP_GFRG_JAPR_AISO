@@ -2,13 +2,21 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.urls import reverse
 from django.contrib.auth.models import User
-import uuid
+
 
 # Validador para RUT
-rut_validator = RegexValidator(r'^[0-9Kk-]+$', 'El RUT solo puede contener números, guion y K.')
+rut_validator = RegexValidator(
+    r'^[0-9Kk\-]+$',
+    'El RUT solo puede contener números, guion y K.'
+)
+
 
 class PersonalSalud(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil_salud')
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='perfil_salud'
+    )
     rut = models.CharField(max_length=12, unique=True, validators=[rut_validator])
     nombres = models.CharField(max_length=80)
     apellidos = models.CharField(max_length=80)
@@ -21,8 +29,9 @@ class PersonalSalud(models.Model):
     def get_absolute_url(self):
         return reverse('perfil_editar', kwargs={'pk': self.pk})
 
+
 class TokenRecuperacionCuenta(models.Model):
-    rut_usuario = models.CharField(max_length=12, validators=[rut_validator])
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=20, unique=True)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
