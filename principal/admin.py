@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PersonalSalud, TokenRecuperacionCuenta
+from .models import PersonalSalud
 
 admin.site.register(PersonalSalud)
-admin.site.register(TokenRecuperacionCuenta)
+

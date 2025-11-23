@@ -30,11 +30,3 @@ class PersonalSalud(models.Model):
         return reverse('perfil_editar', kwargs={'pk': self.pk})
 
 
-class TokenRecuperacionCuenta(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=20, unique=True)
-    activo = models.BooleanField(default=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Token {self.token} - {'Activo' if self.activo else 'Inactivo'}"
