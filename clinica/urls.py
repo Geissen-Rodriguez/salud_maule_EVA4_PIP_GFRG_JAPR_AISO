@@ -1,0 +1,74 @@
+# clinica/urls.py
+from django.urls import path
+from .views import (
+    # Vistas de Paciente
+    PacienteCreateView, PacienteListView, PacienteDetailView, PacienteUpdateView, 
+    
+    # Vistas de Ingreso
+    IngresoCreateView, IngresoListView, IngresoDetailView, IngresoUpdateView,
+    
+    # Vistas de Ficha y Nota
+    FichaListView, FichaUpdateView, NotaCreateView,
+    
+    # Vistas de Reporte
+    ReporteMedicosView
+)
+
+urlpatterns = [
+    
+    # -----------------------------------------------
+    # 🩺 RECURSO: PACIENTES (/pacientes/)
+    # (Mapeado a Admin. Ingreso)
+    # -----------------------------------------------
+    
+    # GET: Listar todos (Index/List)
+    path('pacientes/', PacienteListView.as_view(), name='paciente_list'),
+    
+    # POST: Crear nuevo recurso (Create)
+    path('pacientes/nuevo/', PacienteCreateView.as_view(), name='paciente_create'),
+    
+    # GET: Obtener detalle del recurso (Detail)
+    path('pacientes/<int:pk>/', PacienteDetailView.as_view(), name='paciente_detail'),
+    
+    # PUT/POST: Actualizar recurso (Edit)
+    path('pacientes/<int:pk>/editar/', PacienteUpdateView.as_view(), name='paciente_edit'),
+
+
+    # -----------------------------------------------
+    # RECURSO: INGRESOS (/ingresos/)
+    # (Mapeado a Admin. Ingreso)
+    # -----------------------------------------------
+    
+    # GET: Listar todos (Index/List)
+    path('ingresos/', IngresoListView.as_view(), name='ingreso_list'), 
+    
+    # POST: Crear nuevo recurso (Create)
+    path('ingresos/nuevo/', IngresoCreateView.as_view(), name='ingreso_create'),
+    
+    # GET: Obtener detalle del recurso (Detail)
+    path('ingresos/<int:pk>/', IngresoDetailView.as_view(), name='ingreso_detail'),
+    
+    # PUT/POST: Actualizar recurso (Edit)
+    path('ingresos/<int:pk>/editar/', IngresoUpdateView.as_view(), name='ingreso_edit'),
+
+
+    # -----------------------------------------------
+    #  RECURSO: FICHAS Y NOTAS (Médico)
+    # -----------------------------------------------
+    
+    # GET: Listar Fichas (Index para Médico Responsable)
+    path('fichas/', FichaListView.as_view(), name='ficha_list'), 
+    
+    # PUT/POST: Actualizar Ficha (Edit)
+    path('fichas/<int:pk>/editar/', FichaUpdateView.as_view(), name='ficha_edit'),
+    
+    # POST: Crear Nota (Recurso anidado en la Ficha)
+    path('fichas/<int:ficha_id>/nota/', NotaCreateView.as_view(), name='nota_create'),
+
+    # -----------------------------------------------
+    #  RECURSO: REPORTES (Director)
+    # -----------------------------------------------
+    
+    # GET: Obtener reporte
+    path('reportes/medicos/', ReporteMedicosView.as_view(), name='reporte_medicos'),
+]

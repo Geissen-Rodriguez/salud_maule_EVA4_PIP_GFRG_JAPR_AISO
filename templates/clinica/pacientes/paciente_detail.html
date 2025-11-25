@@ -1,0 +1,58 @@
+{% extends 'layout/base.html' %}
+{% block title %}Detalle de Paciente{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👤 Detalle del Paciente: {{ paciente.nombres }} {{ paciente.apellidos }}</h2>
+        <a href="{% url 'paciente_edit' paciente.pk %}" class="btn btn-primary">
+            Editar Paciente
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            Información Personal y Contacto
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">RUT</dt>
+                <dd class="col-sm-9">{{ paciente.rut }}</dd>
+
+                <dt class="col-sm-3">Nombres</dt>
+                <dd class="col-sm-9">{{ paciente.nombres }}</dd>
+
+                <dt class="col-sm-3">Apellidos</dt>
+                <dd class="col-sm-9">{{ paciente.apellidos }}</dd>
+
+                <dt class="col-sm-3">Correo</dt>
+                <dd class="col-sm-9">{{ paciente.correo|default:"N/A" }}</dd>
+            </dl>
+        </div>
+    </div>
+    
+    <h3 class="mt-4">Historial de Ingresos ({{ paciente.ingresos.count }})</h3>
+    {% if paciente.ingresos.all %}
+        {% for ingreso in paciente.ingresos.all|dictsort:"-fecha_ingreso" %}
+            <div class="card mb-3 {% if ingreso.activo %}border-danger{% else %}border-success{% endif %}">
+                <div class="card-body">
+                    <h5>Ingreso #{{ ingreso.pk }}</h5>
+                    <p>
+                        **Centro:** {{ ingreso.centro.nombre }} | 
+                        **Área:** {{ ingreso.area.nombre }} | 
+                        **Fecha:** {{ ingreso.fecha_ingreso|date:"d M Y H:i" }}
+                    </p>
+                    <p>
+                        **Estado:** <span class="badge {% if ingreso.activo %}bg-danger{% else %}bg-success{% endif %}">
+                            {{ ingreso.get_estado_display }} {% if ingreso.activo %}(Activo){% endif %}
+                        </span>
+                    </p>
+                    <a href="{% url 'ingreso_detail' ingreso.pk %}" class="btn btn-sm btn-outline-secondary">Ver Detalle de Ingreso</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="alert alert-warning">Este paciente no tiene ingresos registrados.</p>
+        <a href="{% url 'ingreso_create' %}?rut={{ paciente.rut }}" class="btn btn-success">Registrar Primer Ingreso</a>
+    {% endif %}
+
+{% endblock %}

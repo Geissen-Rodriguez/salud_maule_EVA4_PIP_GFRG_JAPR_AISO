@@ -1,0 +1,64 @@
+{% extends 'layout/base.html' %}
+{% block title %}Detalle de Ficha Clínica{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📄 Ficha Clínica #{{ ficha.pk }}</h2>
+        <a href="{% url 'ficha_edit' ficha.pk %}" class="btn btn-primary">
+            Editar Resumen
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            Información General
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Paciente</dt>
+                <dd class="col-sm-9">
+                    <a href="{% url 'paciente_detail' ficha.ingreso.paciente.pk %}">
+                        {{ ficha.ingreso.paciente.nombres }} {{ ficha.ingreso.paciente.apellidos }} (RUT: {{ ficha.ingreso.paciente.rut }})
+                    </a>
+                </dd>
+                
+                <dt class="col-sm-3">Médico Responsable</dt>
+                <dd class="col-sm-9">{{ ficha.medico_responsable }}</dd>
+
+                <dt class="col-sm-3">Ubicación</dt>
+                <dd class="col-sm-9">{{ ficha.ingreso.centro.nombre }} / Área: {{ ficha.ingreso.area.nombre }}</dd>
+
+                <dt class="col-sm-3">Estado Actual</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-info text-dark">{{ ficha.get_estado_actual_display }}</span>
+                </dd>
+
+                <dt class="col-sm-3">Resumen del Tratamiento</dt>
+                <dd class="col-sm-9">{{ ficha.resumen_tratamiento|linebreaksbr|default:"No hay resumen aún." }}</dd>
+            </dl>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+        <h3>Notas Médicas ({{ ficha.notas.count }})</h3>
+        <a href="{% url 'nota_create' ficha_id=ficha.pk %}" class="btn btn-success">
+            + Añadir Nota
+        </a>
+    </div>
+    
+    {% if ficha.notas.exists %}
+        {% for nota in ficha.notas.all|dictsort:"fecha_hora" reverse %}
+            <div class="card mb-3">
+                <div class="card-header small text-muted">
+                    Nota de **{{ nota.medico }}** ({{ nota.medico.cargo }}) — {{ nota.fecha_hora|date:"d M Y H:i" }}
+                </div>
+                <div class="card-body">
+                    {{ nota.detalle|linebreaksbr }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="alert alert-warning">No hay notas médicas registradas para esta ficha.</p>
+    {% endif %}
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'layout/base.html' %}
+{% block title %}Editar Ficha Clínica{% endblock %}
+{% block content %}
+<div class="card shadow">
+  <div class="card-header bg-warning text-dark">Ficha Clínica</div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Actualizar</button>
+      <a href="/fichas/" class="btn btn-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
