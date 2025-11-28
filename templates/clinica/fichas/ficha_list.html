@@ -2,54 +2,55 @@
 {% block title %}Mis Fichas Clínicas{% endblock %}
 
 {% block content %}
-    <h2>🏥 Mis Fichas Clínicas Asignadas</h2>
-    <p class="text-muted">Visualizando **{{ fichas.count }}** fichas donde usted es el médico responsable. (Acceso solo para Médico)</p>
+<h2> Mis Fichas Clínicas Asignadas</h2>
+<p class="text-muted">Visualizando **{{ fichas.count }}** fichas donde usted es el médico responsable. (Acceso solo para
+    Médico)</p>
 
-    {% if fichas %}
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-secondary">
-                    <tr>
-                        <th>ID Ficha</th>
-                        <th>Paciente</th>
-                        <th>RUT</th>
-                        <th>Centro/Área</th>
-                        <th>Estado Ficha</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ficha in fichas %}
-                        <tr>
-                            <td>#{{ ficha.pk }}</td>
-                            
-                            <td>{{ ficha.ingreso.paciente.nombres }} {{ ficha.ingreso.paciente.apellidos }}</td>
-                            <td>{{ ficha.ingreso.paciente.rut }}</td>
-                            
-                            <td>{{ ficha.ingreso.centro.nombre }} / {{ ficha.ingreso.area.nombre }}</td>
-                            
-                            <td>
-                                <span class="badge bg-info text-dark">{{ ficha.get_estado_actual_display }}</span>
-                            </td>
-                            
-                            <td>
-                                <a href="{% url 'ficha_edit' ficha.pk %}" class="btn btn-sm btn-primary me-2">
-                                    Ver/Editar Ficha
-                                </a>
-                                
-                                <a href="{% url 'nota_create' ficha_id=ficha.pk %}" class="btn btn-sm btn-success">
-                                    Añadir Nota
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="alert alert-info mt-3" role="alert">
-            No tiene fichas clínicas asignadas como médico responsable.
-        </div>
-    {% endif %}
+{% if fichas %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-secondary">
+            <tr>
+                <th>ID Ficha</th>
+                <th>Paciente</th>
+                <th>RUT</th>
+                <th>Centro/Área</th>
+                <th>Estado Ficha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ficha in fichas %}
+            <tr>
+                <td>#{{ ficha.pk }}</td>
+
+                <td>{{ ficha.ingreso.paciente.nombres }} {{ ficha.ingreso.paciente.apellidos }}</td>
+                <td>{{ ficha.ingreso.paciente.rut }}</td>
+
+                <td>{{ ficha.ingreso.centro.nombre }} / {{ ficha.ingreso.area.nombre }}</td>
+
+                <td>
+                    <span class="badge bg-info text-dark">{{ ficha.get_estado_actual_display }}</span>
+                </td>
+
+                <td>
+                    <a href="{% url 'ficha_edit' ficha.pk %}" class="btn btn-sm btn-primary me-2">
+                        Ver/Editar Ficha
+                    </a>
+
+                    <a href="{% url 'nota_create' ficha_id=ficha.pk %}" class="btn btn-sm btn-success">
+                        Añadir Nota
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info mt-3" role="alert">
+    No tiene fichas clínicas asignadas como médico responsable.
+</div>
+{% endif %}
 
 {% endblock %}

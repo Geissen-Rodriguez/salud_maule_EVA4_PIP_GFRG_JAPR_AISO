@@ -9,6 +9,18 @@ rut_validator = RegexValidator(
     'El RUT solo puede contener números, guion y K.'
 )
 
+SECTORES = [
+    ('verde', 'Verde'),
+    ('amarillo', 'Amarillo'),
+    ('rojo', 'Rojo'),
+]
+
+SUBSECTORES = [
+    ('A', 'Sector A'),
+    ('B', 'Sector B'),
+    ('C', 'Sector C'),
+]
+
 CARGOS = [
     ('medico', 'Médico'),
     ('administrativo_ingreso', 'Administrativo ingreso'),
@@ -32,3 +44,10 @@ class PersonalSalud(models.Model):
 
     def get_absolute_url(self):
         return reverse('perfil_editar', kwargs={'pk': self.pk})
+
+    def get_area_actual(self):
+        # Retorna el nombre del área de la asignación activa, si existe.
+        asignacion = self.asignaciones.filter(activo=True).first()
+        if asignacion and asignacion.area:
+            return asignacion.area.nombre
+        return None

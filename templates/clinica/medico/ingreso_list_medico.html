@@ -1,0 +1,97 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Pacientes Hospitalizados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Pacientes Hospitalizados</h2>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tablaPacientes" class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Paciente</th>
+                            <th>RUT</th>
+                            <th>Centro</th>
+                            <th>Área</th>
+                            <th>Estado</th>
+                            <th>Fecha Ingreso</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ingreso in ingresos %}
+                        <tr>
+                            <td>{{ ingreso.paciente.nombres }} {{ ingreso.paciente.apellidos }}</td>
+                            <td>{{ ingreso.paciente.rut }}</td>
+                            <td>{{ ingreso.centro.nombre }}</td>
+                            <td>{{ ingreso.area.nombre }}</td>
+                            <td>
+                                <span
+                                    class="badge {% if ingreso.estado == 'tratamiento' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ ingreso.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>{{ ingreso.fecha_ingreso|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    {% if ingreso.fichas.exists %}
+                                    <a href="{% url 'ficha_list' %}?q={{ ingreso.paciente.rut }}"
+                                        class="btn btn-sm btn-info text-white" title="Ver Ficha">
+                                         Ver Ficha
+                                    </a>
+                                    <!-- Botón para crear nota en la primera ficha activa encontrada -->
+                                    {% with ficha=ingreso.fichas.first %}
+                                    <a href="{% url 'nota_create' ficha.id %}" class="btn btn-sm btn-primary"
+                                        title="Crear Nota">
+                                         Nota
+                                    </a>
+                                    {% endwith %}
+                                    {% else %}
+                                    <a href="{% url 'ficha_create' ingreso.id %}" class="btn btn-sm btn-success"
+                                        title="Crear Ficha">
+                                         Crear Ficha
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#tablaPacientes').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            order: [[5, 'desc']], // Ordenar por fecha de ingreso descendente
+            pageLength: 25,
+            responsive: true,
+            columnDefs: [
+                { orderable: false, targets: 6 } // No ordenar por columna de acciones
+            ]
+        });
+    });
+</script>
+{% endblock %}

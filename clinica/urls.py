@@ -5,10 +5,10 @@ from .views import (
     PacienteCreateView, PacienteListView, PacienteDetailView, PacienteUpdateView, 
     
     # Vistas de Ingreso
-    IngresoCreateView, IngresoListView, IngresoDetailView, IngresoUpdateView,
+    IngresoCreateView, IngresoListView, IngresoDetailView, IngresoUpdateView, IngresoDeleteView,
     
     # Vistas de Ficha y Nota
-    FichaListView, FichaUpdateView, NotaCreateView,
+    FichaListView, FichaUpdateView, NotaCreateView, FichaCreateView, MedicoIngresoListView,
     
     # Vistas de Reporte
     ReporteMedicosView
@@ -16,10 +16,10 @@ from .views import (
 
 urlpatterns = [
     
-    # -----------------------------------------------
-    # 🩺 RECURSO: PACIENTES (/pacientes/)
+  
+    # RECURSO: PACIENTES (/pacientes/)
     # (Mapeado a Admin. Ingreso)
-    # -----------------------------------------------
+
     
     # GET: Listar todos (Index/List)
     path('pacientes/', PacienteListView.as_view(), name='paciente_list'),
@@ -34,10 +34,10 @@ urlpatterns = [
     path('pacientes/<int:pk>/editar/', PacienteUpdateView.as_view(), name='paciente_edit'),
 
 
-    # -----------------------------------------------
+ 
     # RECURSO: INGRESOS (/ingresos/)
     # (Mapeado a Admin. Ingreso)
-    # -----------------------------------------------
+  
     
     # GET: Listar todos (Index/List)
     path('ingresos/', IngresoListView.as_view(), name='ingreso_list'), 
@@ -50,12 +50,18 @@ urlpatterns = [
     
     # PUT/POST: Actualizar recurso (Edit)
     path('ingresos/<int:pk>/editar/', IngresoUpdateView.as_view(), name='ingreso_edit'),
-
-
-    # -----------------------------------------------
-    #  RECURSO: FICHAS Y NOTAS (Médico)
-    # -----------------------------------------------
     
+    # DELETE: Eliminar recurso (Delete)
+    path('ingresos/<int:pk>/eliminar/', IngresoDeleteView.as_view(), name='ingreso_delete'),
+
+
+ 
+    #  RECURSO: FICHAS Y NOTAS (Médico)
+
+    
+    # GET: Listar todos los ingresos activos (Para Médico)
+    path('medico/pacientes/', MedicoIngresoListView.as_view(), name='medico_ingreso_list'),
+
     # GET: Listar Fichas (Index para Médico Responsable)
     path('fichas/', FichaListView.as_view(), name='ficha_list'), 
     
@@ -65,9 +71,12 @@ urlpatterns = [
     # POST: Crear Nota (Recurso anidado en la Ficha)
     path('fichas/<int:ficha_id>/nota/', NotaCreateView.as_view(), name='nota_create'),
 
-    # -----------------------------------------------
+    # POST: Crear Ficha (Desde Ingreso)
+    path('ingresos/<int:ingreso_id>/ficha/nueva/', FichaCreateView.as_view(), name='ficha_create'),
+
+
     #  RECURSO: REPORTES (Director)
-    # -----------------------------------------------
+
     
     # GET: Obtener reporte
     path('reportes/medicos/', ReporteMedicosView.as_view(), name='reporte_medicos'),

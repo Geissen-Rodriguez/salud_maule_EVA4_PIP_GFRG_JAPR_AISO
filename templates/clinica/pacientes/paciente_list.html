@@ -2,73 +2,82 @@
 {% block title %}Listado de Pacientes{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📋 Listado de Pacientes</h2>
-        <a href="{% url 'paciente_create' %}" class="btn btn-success">
-            ➕ Registrar Nuevo Paciente
-        </a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2> Listado de Pacientes</h2>
+    <a href="{% url 'paciente_create' %}" class="btn btn-success">
+        Registrar Nuevo Paciente
+    </a>
+</div>
 
-    <p class="text-muted">Visualizando **{{ pacientes.count }}** pacientes registrados.</p>
+<p class="text-muted">Visualizando **{{ pacientes.count }}** pacientes registrados.</p>
 
-    {% if pacientes %}
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-primary">
-                    <tr>
-                        <th>RUT</th>
-                        <th>Paciente</th>
-                        <th>Estado Actual</th>
-                        <th>Centro Actual</th>
-                        <th>Último Ingreso</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for paciente in pacientes %}
-                        <tr>
-                            <td>{{ paciente.rut }}</td>
-                            
-                            <td>{{ paciente.nombres }} {{ paciente.apellidos }}</td>
-                            
-                            <td>
-                                {% if paciente.ultimo_estado %}
-                                    <span class="badge 
+{% if pacientes %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-primary">
+            <tr>
+                <th>RUT</th>
+                <th>Paciente</th>
+                <th>Estado Actual</th>
+                <th>Centro Actual</th>
+                <th>Último Ingreso</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for paciente in pacientes %}
+            <tr>
+                <td>{{ paciente.rut }}</td>
+
+                <td>{{ paciente.nombres }} {{ paciente.apellidos }}</td>
+
+                <td>
+                    {% if paciente.ultimo_estado %}
+                    <span class="badge 
                                         {% if paciente.ultimo_estado == 'tratamiento' %}bg-primary
                                         {% elif paciente.ultimo_estado == 'preop' %}bg-warning text-dark
                                         {% elif paciente.ultimo_estado == 'alta' %}bg-success
                                         {% else %}bg-secondary
                                         {% endif %}">
-                                        {{ paciente.get_ultimo_estado_display }}
-                                    </span>
-                                {% else %}
-                                    <span class="text-muted small">Sin Ingreso</span>
-                                {% endif %}
-                            </td>
-                            
-                            <td>{{ paciente.centro_actual|default:"N/A" }}</td>
-                            
-                            <td>{{ paciente.fecha_ultimo_ingreso|date:"d M Y"|default:"N/A" }}</td>
+                        {{ paciente.get_ultimo_estado_display }}
+                    </span>
+                    {% else %}
+                    <span class="text-muted small">Sin Ingreso</span>
+                    {% endif %}
+                </td>
 
-                            <td>
-                                <a href="{% url 'ingreso_create' %}?rut={{ paciente.rut }}" class="btn btn-sm btn-warning" title="Registrar Ingreso">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
-                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m7.5-3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h1.5V9.5a.5.5 0 0 1 .5-.5"/>
-                                    </svg>
-                                </a>
-                                <a href="{% url 'paciente_detail' paciente.pk %}" class="btn btn-sm btn-info" title="Ver Detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="alert alert-info mt-3" role="alert">
-            No se encontraron pacientes registrados en el sistema. Utiliza el botón **"Registrar Nuevo Paciente"** para comenzar.
-        </div>
-    {% endif %}
+                <td>{{ paciente.centro_actual|default:"N/A" }}</td>
+
+                <td>{{ paciente.fecha_ultimo_ingreso|date:"d M Y"|default:"N/A" }}</td>
+
+                <td>
+                    <a href="{% url 'ingreso_create' %}?rut={{ paciente.rut }}" class="btn btn-sm btn-warning"
+                        title="Registrar Ingreso">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m7.5-3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h1.5V9.5a.5.5 0 0 1 .5-.5" />
+                        </svg>
+                    </a>
+                    <a href="{% url 'paciente_detail' paciente.pk %}" class="btn btn-sm btn-info" title="Ver Detalle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-eye-fill" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                            <path
+                                d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                        </svg>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info mt-3" role="alert">
+    No se encontraron pacientes registrados en el sistema. Utiliza el botón **"Registrar Nuevo Paciente"** para
+    comenzar.
+</div>
+{% endif %}
 
 {% endblock %}

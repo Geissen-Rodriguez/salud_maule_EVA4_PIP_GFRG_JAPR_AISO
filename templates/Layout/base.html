@@ -1,17 +1,18 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestión de Pacientes — Región del Maule{% endblock %}</title>
-    
+
     <link rel="icon" type="image/x-icon" href="{% static 'img/Logo.jpg' %}">
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
-    
+
     <style>
         /* Estilos para botones del navbar */
         .nav-module-btn {
@@ -20,43 +21,44 @@
             font-weight: 500;
             transition: all 0.3s ease;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            text-decoration: none; /* Asegura que no tenga subrayado de ancla */
+            text-decoration: none;
+            /* Asegura que no tenga subrayado de ancla */
             display: inline-block;
         }
-        
+
         .nav-module-btn:hover {
             background-color: rgba(255, 255, 255, 0.2);
             border-color: rgba(255, 255, 255, 0.6);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         .nav-module-btn.active {
             background-color: #ffffff;
             color: #0d6efd !important;
             border-color: #ffffff;
             font-weight: 600;
         }
-        
+
         .nav-module-btn.active:hover {
             background-color: #f8f9fa;
             transform: translateY(0);
         }
-        
+
         .navbar-custom {
-            background-color: #007bff; /* Color para destacar el navbar */
+            background-color: #007bff;
+            /* Color para destacar el navbar */
         }
     </style>
 </head>
+
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
                 <div class="logo-container me-3">
-                    <img src="{% static 'img/Logo.jpg' %}" 
-                        alt="Logo Hospital Regional del Maule" 
-                        class="navbar-logo"
+                    <img src="{% static 'img/Logo.jpg' %}" alt="Logo Hospital Regional del Maule" class="navbar-logo"
                         style="height: 40px;"
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:3rem\'>🏥</span>';">
                 </div>
@@ -71,64 +73,72 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                
+
                 {% if user.is_authenticated %}
                 <div class="d-flex flex-wrap gap-2 ms-3 me-auto">
-                    
+
                     {% with current_path=request.path %}
-                        
-                        {% if user.perfil_salud.cargo == 'administrativo_ingreso' %}
-                            <a href="{% url 'paciente_list' %}" class="nav-link text-white nav-module-btn {% if 'pacientes' in current_path and 'ingresos' not in current_path %}active{% endif %}">
-                                📋 Pacientes
-                            </a>
-                            <a href="{% url 'ingreso_list' %}" class="nav-link text-white nav-module-btn {% if 'ingresos' in current_path %}active{% endif %}">
-                                📥 Ingresos
-                            </a>
-                        {% endif %}
 
-                        {% if user.perfil_salud.cargo == 'medico' %}
-                            <a href="{% url 'ficha_list' %}" class="nav-link text-white nav-module-btn {% if 'fichas' in current_path %}active{% endif %}">
-                                🩺 Fichas Clínicas
-                            </a>
-                        {% endif %}
+                    {% if user.perfil_salud.cargo == 'administrativo_ingreso' %}
+                    <a href="{% url 'paciente_list' %}"
+                        class="nav-link text-white nav-module-btn {% if 'pacientes' in current_path and 'ingresos' not in current_path %}active{% endif %}">
+                        Pacientes
+                    </a>
+                    {% endif %}
 
-                        {% if user.perfil_salud.cargo == 'director' %}
-                            <a href="{% url 'reporte_medicos' %}" class="nav-link text-white nav-module-btn {% if 'reportes' in current_path %}active{% endif %}">
-                                📊 Reportes
-                            </a>
-                        {% endif %}
-                    
+                    {% if user.perfil_salud.cargo == 'medico' %}
+                    <a href="{% url 'medico_ingreso_list' %}"
+                        class="nav-link text-white nav-module-btn {% if 'medico/pacientes' in current_path %}active{% endif %}">
+                        Hospitalizados
+                    </a>
+                    <a href="{% url 'ficha_list' %}"
+                        class="nav-link text-white nav-module-btn {% if 'fichas' in current_path %}active{% endif %}">
+                        Mis Fichas
+                    </a>
+                    {% endif %}
+
+                    {% if user.perfil_salud.cargo == 'director' %}
+                    <a href="{% url 'reporte_medicos' %}"
+                        class="nav-link text-white nav-module-btn {% if 'reportes' in current_path %}active{% endif %}">
+                        Reportes
+                    </a>
+                    {% endif %}
+
                     {% endwith %}
                 </div>
                 {% endif %}
-                
+
                 <div class="mx-auto d-none d-lg-block">
-                    <span class="text-white fst-italic">"Cuidamos tu salud, organizamos tu atención"</span>
+                    <span class="text-white fst-italic">"Cuidamos tu salud, organizamos tu
+                        atención"</span>
                 </div>
-                
+
                 <div class="d-flex align-items-center ms-auto mt-2 mt-lg-0">
                     {% if user.is_authenticated %}
-                        <div class="text-end me-3 d-none d-md-block">
-                            {% with perfil=user.perfil_salud %}
-                                <div class="text-white fw-semibold">
-                                    {{ perfil.nombres }} {{ perfil.apellidos }}
-                                </div>
-                                <div class="text-white-50 small">
-                                    {{ perfil.cargo|capfirst }}
-                                </div>
-                            {% endwith %}
+                    <div class="text-end me-3 d-none d-md-block">
+                        {% with perfil=user.perfil_salud %}
+                        <div class="text-white fw-semibold">
+                            {{ perfil.nombres }} {{ perfil.apellidos }}
                         </div>
-                        
-                        <form action="{% url 'logout' %}" method="post" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-outline-light">
-                                Salir
-                            </button>
-                        </form>
+                        <div class="text-white-50 small">
+                            {{ perfil.cargo|capfirst }}
+                            {% if perfil.cargo == 'medico' and perfil.get_area_actual %}
+                            — Área: {{ perfil.get_area_actual }}
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                    </div>
+
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-light">
+                            Salir
+                        </button>
+                    </form>
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-outline-light">
-                            Ingresar
-                        </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light">
+                        Ingresar
+                    </a>
                     {% endif %}
                 </div>
             </div>
@@ -137,12 +147,12 @@
 
     <div class="container mt-3">
         {% if messages %}
-            {% for m in messages %}
-                <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show" role="alert">
-                    {{ m }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+        {% for m in messages %}
+        <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ m }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
 
@@ -173,7 +183,8 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

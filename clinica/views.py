@@ -1,163 +1,154 @@
-# clinica/views.py
-
-from django.views.generic import CreateView, UpdateView, ListView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse_lazy
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
-from django.db.models import OuterRef, Subquery
+from django.db.models import Q
 
-from .models import Paciente, IngresoPaciente, FichaClinica, NotaMedica, ESTADOS_PACIENTE
+from .models import Paciente, IngresoPaciente, FichaClinica, NotaMedica
 from .forms import PacienteForm, IngresoForm, FichaForm, NotaForm
 
+# --- Mixins de Permisos ---
 
-# --- Mixins de control por cargo ---
+class SoloDirectorMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and \
+               hasattr(self.request.user, 'perfil_salud') and \
+               self.request.user.perfil_salud.cargo == 'director'
 
-class SoloAdminIngresoMixin:
-    def dispatch(self, request, *args, **kwargs):
-        perfil = getattr(request.user, 'perfil_salud', None)
-        if not perfil or perfil.cargo != 'administrativo_ingreso':
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
+class SoloMedicoMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and \
+               hasattr(self.request.user, 'perfil_salud') and \
+               self.request.user.perfil_salud.cargo == 'medico'
 
-#  NUEVO MIXIN: Permite acceso a Médicos y Administrativos (para ver datos)
-class SoloMedicoOAdminMixin:
-    def dispatch(self, request, *args, **kwargs):
-        perfil = getattr(request.user, 'perfil_salud', None)
-        # Permite si el cargo es 'administrativo_ingreso' O 'medico'
-        if not perfil or perfil.cargo not in ['administrativo_ingreso', 'medico']:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
+class SoloAdministrativoMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and \
+               hasattr(self.request.user, 'perfil_salud') and \
+               self.request.user.perfil_salud.cargo == 'administrativo_ingreso'
 
+# --- Vistas de Paciente ---
 
-class SoloMedicoMixin:
-    def dispatch(self, request, *args, **kwargs):
-        perfil = getattr(request.user, 'perfil_salud', None)
-        if not perfil or perfil.cargo != 'medico':
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-
-class SoloDirectorMixin:
-    def dispatch(self, request, *args, **kwargs):
-        perfil = getattr(request.user, 'perfil_salud', None)
-        if not perfil or perfil.cargo != 'director':
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-
-# --- Administrativo ingreso (Paciente y Ingreso) ---
-
-# --- PACIENTE ---
-
-class PacienteCreateView(LoginRequiredMixin, SoloAdminIngresoMixin, CreateView):
-    # Solo Administrativo puede crear
-    model = Paciente
-    form_class = PacienteForm
-    template_name = 'clinica/pacientes/paciente_form.html' 
-    success_url = '/pacientes/' 
-
-class PacienteListView(LoginRequiredMixin, SoloMedicoOAdminMixin, ListView): #  CAMBIO DE PERMISO
-    # Listar permitido a Admin y Médico
+class PacienteListView(LoginRequiredMixin, ListView):
     model = Paciente
     template_name = 'clinica/pacientes/paciente_list.html'
     context_object_name = 'pacientes'
+    paginate_by = 10
 
     def get_queryset(self):
-        # Optimización para mostrar el último estado de ingreso en la lista (Mantenida)
-        ultimo_ingreso = IngresoPaciente.objects.filter(
-            paciente=OuterRef('pk')
-        ).order_by('-fecha_ingreso')
-
-        estado_subquery = ultimo_ingreso.values('estado')[:1]
-        fecha_subquery = ultimo_ingreso.values('fecha_ingreso')[:1]
-        centro_subquery = ultimo_ingreso.values('centro__nombre')[:1]
-        
-        queryset = Paciente.objects.annotate(
-            ultimo_estado=Subquery(estado_subquery),
-            fecha_ultimo_ingreso=Subquery(fecha_subquery),
-            centro_actual=Subquery(centro_subquery)
-        ).order_by('apellidos')
-
-        Paciente.get_ultimo_estado_display = lambda self: dict(ESTADOS_PACIENTE).get(self.ultimo_estado, self.ultimo_estado)
-
+        queryset = super().get_queryset()
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(
+                Q(rut__icontains=q) | 
+                Q(nombres__icontains=q) | 
+                Q(apellidos__icontains=q)
+            )
         return queryset
 
-class PacienteDetailView(LoginRequiredMixin, SoloMedicoOAdminMixin, DetailView): #  CAMBIO DE PERMISO
-    # Detalle permitido a Admin y Médico
-    model = Paciente
-    template_name = 'clinica/pacientes/paciente_detail.html' 
-    context_object_name = 'paciente'
-
-class PacienteUpdateView(LoginRequiredMixin, SoloAdminIngresoMixin, UpdateView):
-    # Actualizar solo para Admin
+class PacienteCreateView(LoginRequiredMixin, SoloAdministrativoMixin, CreateView):
     model = Paciente
     form_class = PacienteForm
-    template_name = 'clinica/pacientes/paciente_form.html' 
-    success_url = '/pacientes/'
+    template_name = 'clinica/pacientes/paciente_form.html'
+    success_url = reverse_lazy('paciente_list')
 
+class PacienteDetailView(LoginRequiredMixin, DetailView):
+    model = Paciente
+    template_name = 'clinica/pacientes/paciente_detail.html'
+    context_object_name = 'paciente'
 
-# --- INGRESO ---
+class PacienteUpdateView(LoginRequiredMixin, SoloAdministrativoMixin, UpdateView):
+    model = Paciente
+    form_class = PacienteForm
+    template_name = 'clinica/pacientes/paciente_form.html'
+    success_url = reverse_lazy('paciente_list')
 
-class IngresoCreateView(LoginRequiredMixin, SoloAdminIngresoMixin, CreateView):
-    # Crear solo para Admin
+# --- Vistas de Ingreso ---
+
+class IngresoListView(LoginRequiredMixin, ListView):
     model = IngresoPaciente
-    form_class = IngresoForm
-    template_name = 'clinica/ingresos/ingreso_form.html'
-    success_url = '/ingresos/'
-
-class IngresoListView(LoginRequiredMixin, SoloMedicoOAdminMixin, ListView): #  CAMBIO DE PERMISO
-    # Listar permitido a Admin y Médico
-    model = IngresoPaciente
-    template_name = 'clinica/ingresos/ingreso_list.html' 
+    template_name = 'clinica/ingresos/ingreso_list.html'
     context_object_name = 'ingresos'
-    
+    paginate_by = 10
+
     def get_queryset(self):
-        # Consulta optimizada para la lista de ingresos (Mantenida)
         return IngresoPaciente.objects.select_related('paciente', 'centro', 'area').order_by('-fecha_ingreso')
 
-class IngresoDetailView(LoginRequiredMixin, SoloMedicoOAdminMixin, DetailView): #  CAMBIO DE PERMISO
-    # Detalle permitido a Admin y Médico
-    model = IngresoPaciente
-    template_name = 'clinica/ingresos/ingreso_detail.html' 
-    context_object_name = 'ingreso'
-
-class IngresoUpdateView(LoginRequiredMixin, SoloAdminIngresoMixin, UpdateView):
-    # Actualizar solo para Admin
+class IngresoCreateView(LoginRequiredMixin, SoloAdministrativoMixin, CreateView):
     model = IngresoPaciente
     form_class = IngresoForm
     template_name = 'clinica/ingresos/ingreso_form.html'
-    success_url = '/ingresos/'
+    success_url = reverse_lazy('ingreso_list')
 
+class IngresoDetailView(LoginRequiredMixin, DetailView):
+    model = IngresoPaciente
+    template_name = 'clinica/ingresos/ingreso_detail.html'
+    context_object_name = 'ingreso'
 
-# --- Médico (Ficha y Nota) ---
-# Estas vistas SÍ deben restringirse solo a Médico (SoloMedicoMixin)
+class IngresoUpdateView(LoginRequiredMixin, SoloAdministrativoMixin, UpdateView):
+    model = IngresoPaciente
+    form_class = IngresoForm
+    template_name = 'clinica/ingresos/ingreso_form.html'
+    success_url = reverse_lazy('ingreso_list')
+
+class IngresoDeleteView(LoginRequiredMixin, SoloAdministrativoMixin, DeleteView):
+    model = IngresoPaciente
+    template_name = 'clinica/ingresos/ingreso_confirm_delete.html'
+    success_url = reverse_lazy('ingreso_list')
+
+# --- Vistas de Ficha y Nota (Médico) ---
+
+class MedicoIngresoListView(LoginRequiredMixin, SoloMedicoMixin, ListView):
+    model = IngresoPaciente
+    template_name = 'clinica/medico/ingreso_list_medico.html'
+    context_object_name = 'ingresos'
+
+    def get_queryset(self):
+        # Mostrar todos los ingresos activos
+        return IngresoPaciente.objects.filter(activo=True).select_related('paciente', 'centro', 'area').order_by('-fecha_ingreso')
+
+class FichaListView(LoginRequiredMixin, SoloMedicoMixin, ListView):
+    model = FichaClinica
+    template_name = 'clinica/fichas/ficha_list.html'
+    context_object_name = 'fichas'
+
+    def get_queryset(self):
+        # Filtrar fichas asignadas al medico o de su área (si aplica)
+        # Por ahora mostramos todas las fichas donde el medico es responsable
+        perfil = self.request.user.perfil_salud
+        return FichaClinica.objects.filter(medico_responsable=perfil).select_related('ingreso__paciente')
+
+class FichaCreateView(LoginRequiredMixin, SoloMedicoMixin, CreateView):
+    model = FichaClinica
+    form_class = FichaForm
+    template_name = 'clinica/fichas/ficha_form.html'
+    success_url = reverse_lazy('ficha_list')
+
+    def form_valid(self, form):
+        ingreso = get_object_or_404(IngresoPaciente, pk=self.kwargs['ingreso_id'])
+        form.instance.ingreso = ingreso
+        form.instance.medico_responsable = self.request.user.perfil_salud
+        return super().form_valid(form)
 
 class FichaUpdateView(LoginRequiredMixin, SoloMedicoMixin, UpdateView):
     model = FichaClinica
     form_class = FichaForm
     template_name = 'clinica/fichas/ficha_form.html'
-    success_url = '/fichas/'
-
-
-class FichaListView(LoginRequiredMixin, SoloMedicoMixin, ListView):
-    model = FichaClinica
-    template_name = 'clinica/fichas/ficha_list.html' 
-    context_object_name = 'fichas'
-
-    def get_queryset(self):
-        perfil = getattr(self.request.user, 'perfil_salud', None)
-        if perfil and perfil.cargo == 'medico':
-            return FichaClinica.objects.filter(
-                medico_responsable=perfil
-            ).select_related('ingreso__paciente', 'ingreso__centro', 'ingreso__area')
-        return FichaClinica.objects.none()
-
+    success_url = reverse_lazy('ficha_list')
 
 class NotaCreateView(LoginRequiredMixin, SoloMedicoMixin, CreateView):
     model = NotaMedica
     form_class = NotaForm
-    template_name = 'clinica/notas/nota_form.html' 
-    success_url = '/fichas/'
+    template_name = 'clinica/fichas/nota_form.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('ingreso_detail', kwargs={'pk': self.object.ficha.ingreso.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ficha'] = get_object_or_404(FichaClinica, pk=self.kwargs['ficha_id'])
+        return context
 
     def form_valid(self, form):
         perfil = getattr(self.request.user, 'perfil_salud', None)
@@ -167,7 +158,7 @@ class NotaCreateView(LoginRequiredMixin, SoloMedicoMixin, CreateView):
         form.instance.ficha = get_object_or_404(FichaClinica, pk=self.kwargs['ficha_id'])
         return super().form_valid(form)
 
-# --- Director ---
+# --- Vistas de Reporte (Director) ---
 
 class ReporteMedicosView(LoginRequiredMixin, SoloDirectorMixin, ListView):
     model = FichaClinica

@@ -1,0 +1,76 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Resumen de Tratamiento{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Resumen de Tratamiento / Evolución</h4>
+            </div>
+
+            <div class="card-body">
+
+                <!-- DATOS DEL PACIENTE -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Paciente:</strong>
+                        {{ ficha.ingreso.paciente.nombres }} {{ ficha.ingreso.paciente.apellidos }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>RUT:</strong> {{ ficha.ingreso.paciente.rut }}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- HISTORIAL DE NOTAS -->
+                <h5 class="mb-3">Historial de Notas</h5>
+
+                {% if ficha.notas.all %}
+                <div class="list-group mb-4">
+                    {% for nota in ficha.notas.all %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1 text-primary">Dr. {{ nota.medico.apellidos }}</h6>
+                            <small class="text-muted">{{ nota.fecha_hora|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ nota.detalle|linebreaksbr }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">No hay notas registradas aún.</div>
+                {% endif %}
+
+                <hr>
+
+                <!-- AGREGAR NOTA -->
+                <h5 class="mb-3">Agregar Nueva Nota</h5>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.detalle.id_for_label }}" class="form-label">
+                            Detalle de Evolución / Tratamiento
+                        </label>
+                        {{ form.detalle }}
+
+                        {% if form.detalle.errors %}
+                        <div class="text-danger small">{{ form.detalle.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'ingreso_detail' ficha.ingreso.pk %}" class="btn btn-secondary">Volver</a>
+                        <button type="submit" class="btn btn-primary">Guardar Nota</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

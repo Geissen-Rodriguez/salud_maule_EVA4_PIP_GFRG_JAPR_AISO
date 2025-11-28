@@ -2,64 +2,104 @@
 {% block title %}Detalle de Ingreso{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>🏥 Detalle de Ingreso #{{ ingreso.pk }}</h2>
-        <a href="{% url 'ingreso_edit' ingreso.pk %}" class="btn btn-primary">
-            Editar Datos de Ingreso
-        </a>
-    </div>
-
-    <div class="card shadow mb-4">
-        <div class="card-header bg-info text-white">
-            Información del Ingreso
-        </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">Paciente</dt>
-                <dd class="col-sm-9">
-                    <a href="{% url 'paciente_detail' ingreso.paciente.pk %}">
-                        {{ ingreso.paciente.nombres }} {{ ingreso.paciente.apellidos }} ({{ ingreso.paciente.rut }})
-                    </a>
-                </dd>
-                
-                <dt class="col-sm-3">Fecha de Ingreso</dt>
-                <dd class="col-sm-9">{{ ingreso.fecha_ingreso|date:"d M Y H:i" }}</dd>
-
-                <dt class="col-sm-3">Centro Asignado</dt>
-                <dd class="col-sm-9">{{ ingreso.centro.nombre }}</dd>
-                
-                <dt class="col-sm-3">Área Asignada</dt>
-                <dd class="col-sm-9">{{ ingreso.area.nombre }}</dd>
-                
-                <dt class="col-sm-3">Estado Actual</dt>
-                <dd class="col-sm-9">
-                    <span class="badge 
-                        {% if ingreso.activo %}bg-danger{% else %}bg-success{% endif %}">
-                        {{ ingreso.get_estado_display }}
-                    </span>
-                    ({% if ingreso.activo %}Activo{% else %}Cerrado{% endif %})
-                </dd>
-                
-                {% if not ingreso.activo %}
-                    <dt class="col-sm-3">Detalles de Alta</dt>
-                    <dd class="col-sm-9 text-success">{{ ingreso.detalles_alta|default:"No especificado." }}</dd>
-                {% endif %}
-            </dl>
-        </div>
-    </div>
-    
-    <h3 class="mt-4">Ficha Clínica y Notas</h3>
-    {% if ingreso.fichas.exists %}
-        {% with ficha=ingreso.fichas.first %}
-            <div class="alert alert-info d-flex justify-content-between align-items-center">
-                <span>Esta ligado a la Ficha Clínica #{{ ficha.pk }}. Estado: **{{ ficha.get_estado_actual_display }}**</span>
-                <a href="{% url 'ficha_detail' ficha.pk %}" class="btn btn-sm btn-info">
-                    Ver Detalle de Ficha
-                </a>
-            </div>
-        {% endwith %}
-    {% else %}
-        <p class="alert alert-warning">Aún no existe una Ficha Clínica creada para este ingreso.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Detalle de Ingreso #{{ ingreso.pk }}</h2>
+    {% if request.user.perfil_salud.cargo == 'administrativo_ingreso' %}
+    <a href="{% url 'ingreso_edit' ingreso.pk %}" class="btn btn-primary">
+        Editar Datos de Ingreso
+    </a>
     {% endif %}
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header bg-info text-white">
+        Información del Ingreso
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Paciente</dt>
+            <dd class="col-sm-9">
+                <a href="{% url 'paciente_detail' ingreso.paciente.pk %}">
+                    {{ ingreso.paciente.nombres }} {{ ingreso.paciente.apellidos }} ({{ ingreso.paciente.rut }})
+                </a>
+            </dd>
+
+            <dt class="col-sm-3">Fecha de Ingreso</dt>
+            <dd class="col-sm-9">{{ ingreso.fecha_ingreso|date:"d M Y H:i" }}</dd>
+
+            <dt class="col-sm-3">Centro Asignado</dt>
+            <dd class="col-sm-9">{{ ingreso.centro.nombre }}</dd>
+
+            <dt class="col-sm-3">Área Asignada</dt>
+            <dd class="col-sm-9">{{ ingreso.area.nombre }}</dd>
+
+            <dt class="col-sm-3">Estado Actual</dt>
+            <dd class="col-sm-9">
+                <span class="badge 
+                        {% if ingreso.activo %}bg-danger{% else %}bg-success{% endif %}">
+                    {{ ingreso.get_estado_display }}
+                </span>
+                ({% if ingreso.activo %}Activo{% else %}Cerrado{% endif %})
+            </dd>
+
+            {% if not ingreso.activo %}
+            <dt class="col-sm-3">Detalles de Alta</dt>
+            <dd class="col-sm-9 text-success">{{ ingreso.detalles_alta|default:"No especificado." }}</dd>
+            {% endif %}
+        </dl>
+    </div>
+</div>
+
+<h3 class="mt-4">Ficha Clínica y Notas</h3>
+{% if ingreso.fichas.exists %}
+{% with ficha=ingreso.fichas.first %}
+
+<div class="alert alert-info d-flex justify-content-between align-items-center">
+    {% if request.user.perfil_salud.cargo == 'medico' %}
+    <a href="{% url 'ficha_edit' ficha.pk %}" class="btn btn-sm btn-outline-info">
+        Editar Ficha
+    </a>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Notas Médicas</h5>
+        {% if request.user.perfil_salud.cargo == 'medico' %}
+        <a href="{% url 'nota_create' ficha.pk %}" class="btn btn-success btn-sm">
+            + Agregar Nota Médica
+        </a>
+        {% endif %}
+    </div>
+    <div class="list-group list-group-flush">
+        {% for nota in ficha.notas.all|dictsortreversed:"fecha_hora" %}
+        <div class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1 fw-bold">Dr. {{ nota.medico.apellidos }}</h6>
+                <small class="text-muted">{{ nota.fecha_hora|date:"d M Y H:i" }}</small>
+            </div>
+            <p class="mb-1">{{ nota.detalle|linebreaksbr }}</p>
+        </div>
+        {% empty %}
+        <div class="list-group-item text-muted text-center">
+            No hay notas médicas registradas.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endwith %}
+{% else %}
+<div class="alert alert-warning d-flex justify-content-between align-items-center">
+    <span>Aún no existe una Ficha Clínica creada para este ingreso.</span>
+    {% if request.user.perfil_salud.cargo == 'medico' %}
+    <form action="{% url 'ficha_create' ingreso.pk %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">
+            Iniciar Ficha Clínica
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
 
 {% endblock %}
