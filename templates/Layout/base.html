@@ -84,6 +84,10 @@
                         class="nav-link text-white nav-module-btn {% if 'pacientes' in current_path and 'ingresos' not in current_path %}active{% endif %}">
                         Pacientes
                     </a>
+                    <a href="{% url 'ingreso_list' %}"
+                        class="nav-link text-white nav-module-btn {% if 'ingresos' in current_path %}active{% endif %}">
+                        Ingresos
+                    </a>
                     {% endif %}
 
                     {% if user.perfil_salud.cargo == 'medico' %}

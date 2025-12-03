@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 from .models import (
     Paciente, IngresoPaciente, FichaClinica, NotaMedica,
-    CategoriaAlergia, Alergia, PacienteAlergia
+    CategoriaAlergia, Alergia, PacienteAlergia, Area
 )
 from .forms import PacienteForm, IngresoForm, FichaForm, NotaForm, PacienteClinicalForm
 from django.http import JsonResponse
@@ -85,7 +85,22 @@ class IngresoListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return IngresoPaciente.objects.select_related('paciente', 'centro', 'area').order_by('-fecha_ingreso')
+        queryset = IngresoPaciente.objects.select_related('paciente', 'centro', 'area').order_by('-fecha_ingreso')
+        area_id = self.request.GET.get('area')
+        if area_id:
+            queryset = queryset.filter(area__id=area_id)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['areas'] = Area.objects.all()
+        area_id = self.request.GET.get('area')
+        if area_id:
+            try:
+                context['selected_area_id'] = int(area_id)
+            except ValueError:
+                pass
+        return context
 
 class IngresoCreateView(LoginRequiredMixin, SoloAdministrativoMixin, CreateView):
     model = IngresoPaciente
