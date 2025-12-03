@@ -9,7 +9,7 @@
     </a>
 </div>
 
-<p class="text-muted">Visualizando **{{ pacientes.count }}** pacientes registrados.</p>
+<p class="text-muted">Visualizando {{ pacientes.count }} pacientes registrados.</p>
 
 {% if pacientes %}
 <div class="table-responsive">
@@ -18,6 +18,8 @@
             <tr>
                 <th>RUT</th>
                 <th>Paciente</th>
+                <th>Sexo</th>
+                <th>Teléfono</th>
                 <th>Estado Actual</th>
                 <th>Centro Actual</th>
                 <th>Último Ingreso</th>
@@ -30,6 +32,25 @@
                 <td>{{ paciente.rut }}</td>
 
                 <td>{{ paciente.nombres }} {{ paciente.apellidos }}</td>
+
+                <td>
+                    {% if paciente.sexo %}
+                    {% if paciente.sexo == 'M' %}Masculino
+                    {% elif paciente.sexo == 'F' %}Femenino
+                    {% else %}Otro
+                    {% endif %}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if paciente.telefono %}
+                    {{ paciente.telefono }}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
 
                 <td>
                     {% if paciente.ultimo_estado %}
@@ -53,6 +74,7 @@
                 <td>
                     <a href="{% url 'ingreso_create' %}?rut={{ paciente.rut }}" class="btn btn-sm btn-warning"
                         title="Registrar Ingreso">
+                        <!-- icono -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                             class="bi bi-person-plus-fill" viewBox="0 0 16 16">
                             <path
@@ -60,6 +82,7 @@
                         </svg>
                     </a>
                     <a href="{% url 'paciente_detail' paciente.pk %}" class="btn btn-sm btn-info" title="Ver Detalle">
+                        <!-- icono -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                             class="bi bi-eye-fill" viewBox="0 0 16 16">
                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />

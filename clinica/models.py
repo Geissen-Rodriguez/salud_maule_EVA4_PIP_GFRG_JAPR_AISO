@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import date
 from principal.models import PersonalSalud, SECTORES, SUBSECTORES
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
@@ -14,6 +15,19 @@ TIPO_CENTRO = [
     ('hospital', 'Hospital'),
     ('cesfam', 'CESFAM'),
 ]
+
+class CategoriaAlergia(models.Model):
+    nombre_categoria = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nombre_categoria
+
+class Alergia(models.Model):
+    ale_nombre = models.CharField(max_length=100)
+    categoria = models.ForeignKey(CategoriaAlergia, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.ale_nombre
 
 class CentroSalud(models.Model):
     nombre = models.CharField(max_length=120, unique=True)
@@ -38,9 +52,41 @@ class Paciente(models.Model):
     nombres = models.CharField(max_length=80)
     apellidos = models.CharField(max_length=80)
     correo = models.EmailField(blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    sexo = models.CharField(max_length=20, choices=[('M', 'Masculino'), ('F', 'Femenino')], blank=True, null=True)
+    
+    # Datos clinicos
+    GRUPO_SANGUINEO_CHOICES = [
+        ('A+', 'A Positivo'),
+        ('A-', 'A Negativo'),
+        ('B+', 'B Positivo'),
+        ('B-', 'B Negativo'),
+        ('AB+', 'AB Positivo'),
+        ('AB-', 'AB Negativo'),
+        ('O+', 'O Positivo'),
+        ('O-', 'O Negativo'),
+    ]
+    peso = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    estatura = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    grupo_sanguineo = models.CharField(max_length=10, choices=GRUPO_SANGUINEO_CHOICES, null=True, blank=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True)
+    fecha_ingreso = models.DateTimeField(null=True, blank=True)
+    detalles_alta = models.TextField(null=True, blank=True)
+    alergias_libre = models.TextField(null=True, blank=True, help_text="Alergias en texto libre")
+    
+    # Estado y Relaciones
+    user_estado = models.IntegerField(default=1, choices=[(1, 'Activo'), (0, 'Inactivo')])
+    alergias = models.ManyToManyField(Alergia, through='PacienteAlergia', related_name='pacientes')
 
     def __str__(self):
         return f"{self.nombres} {self.apellidos} ({self.rut})"
+
+    @property
+    def edad(self):
+        if self.fecha_nacimiento:
+            today = date.today()
+            return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
+        return None
 
     # --- PROPIEDADES AÑADIDAS PARA LA VISUALIZACION EN LISTADOS ---
     
@@ -139,3 +185,12 @@ class AsignacionClinica(models.Model):
     centro = models.ForeignKey(CentroSalud, on_delete=models.CASCADE, related_name='asignaciones')
     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True, related_name='asignaciones')
     activo = models.BooleanField(default=True)
+
+class PacienteAlergia(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    alergia = models.ForeignKey(Alergia, on_delete=models.CASCADE)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    observaciones = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('paciente', 'alergia')

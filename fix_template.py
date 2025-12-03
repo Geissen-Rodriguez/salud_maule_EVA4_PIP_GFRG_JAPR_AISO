@@ -1,4 +1,7 @@
-{% extends 'layout/base.html' %}
+
+import os
+
+content = """{% extends 'layout/base.html' %}
 {% block title %}Ficha Clínica{% endblock %}
 
 {% block content %}
@@ -230,4 +233,10 @@
     }
   }
 </script>
-{% endblock %}
+{% endblock %}"""
+
+file_path = os.path.join('templates', 'clinica', 'fichas', 'ficha_form.html')
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Successfully wrote to {file_path}")

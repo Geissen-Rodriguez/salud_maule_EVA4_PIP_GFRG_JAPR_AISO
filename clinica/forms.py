@@ -5,12 +5,14 @@ from .models import Paciente, IngresoPaciente, FichaClinica, NotaMedica
 class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
-        fields = ['rut', 'nombres', 'apellidos', 'correo']
+        fields = ['rut', 'nombres', 'apellidos', 'correo', 'telefono', 'sexo']
         widgets = {
             'rut': forms.TextInput(attrs={'class': 'form-control'}),
             'nombres': forms.TextInput(attrs={'class': 'form-control'}),
             'apellidos': forms.TextInput(attrs={'class': 'form-control'}),
             'correo': forms.EmailInput(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'sexo': forms.Select(attrs={'class': 'form-select'}),
         }
 
 class IngresoForm(forms.ModelForm):
@@ -56,4 +58,18 @@ class NotaForm(forms.ModelForm):
         fields = ['detalle']
         widgets = {
             'detalle': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+class PacienteClinicalForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = ['peso', 'estatura', 'grupo_sanguineo', 'fecha_nacimiento', 'fecha_ingreso', 'detalles_alta', 'alergias_libre']
+        widgets = {
+            'peso': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'estatura': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'grupo_sanguineo': forms.Select(attrs={'class': 'form-select'}),
+            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fecha_ingreso': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'detalles_alta': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'alergias_libre': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }

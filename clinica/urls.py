@@ -11,7 +11,10 @@ from .views import (
     FichaListView, FichaUpdateView, NotaCreateView, FichaCreateView, MedicoIngresoListView,
     
     # Vistas de Reporte
-    ReporteMedicosView
+    ReporteMedicosView,
+
+    # API Views
+    get_alergias_by_categoria, agregar_alergia_paciente, eliminar_alergia_paciente
 )
 
 urlpatterns = [
@@ -80,4 +83,9 @@ urlpatterns = [
     
     # GET: Obtener reporte
     path('reportes/medicos/', ReporteMedicosView.as_view(), name='reporte_medicos'),
+
+    # API ALERGIAS
+    path('api/alergias/categoria/<int:categoria_id>/', get_alergias_by_categoria, name='api_alergias_categoria'),
+    path('api/alergias/agregar/', agregar_alergia_paciente, name='api_alergias_agregar'),
+    path('api/alergias/eliminar/', eliminar_alergia_paciente, name='api_alergias_eliminar'),
 ]

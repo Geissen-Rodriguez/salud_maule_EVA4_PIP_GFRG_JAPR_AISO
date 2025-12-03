@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h2>📋 Pacientes Hospitalizados (Ingresos)</h2>
+  <h2>Pacientes Hospitalizados (Ingresos)</h2>
   {% if request.user.perfil_salud.cargo == 'administrativo_ingreso' %}
   <a href="{% url 'ingreso_create' %}" class="btn btn-primary">
     + Nuevo Ingreso
@@ -21,7 +21,7 @@
         <select name="area" id="area" class="form-select">
           <option value="">Todas las Áreas</option>
           {% for a in areas %}
-          <option value="{{ a.id }}" {% if request.GET.area|add:"0"==a.id %}selected{% endif %}>
+          <option value="{{ a.id }}" {% if request.GET.area==a.id|stringformat:"s" %}selected{% endif %}>
             {{ a.nombre }} ({{ a.centro.nombre }})
           </option>
           {% endfor %}
@@ -63,7 +63,7 @@
             <td>{{ ingreso.paciente.nombres }} {{ ingreso.paciente.apellidos }}</td>
             <td>{{ ingreso.paciente.rut }}</td>
             <td>{{ ingreso.centro.nombre }}</td>
-            <td>{{ ingreso.area.nombre }}</td>
+            <td>{{ ingreso.area.nombre }}</td>z
             <td>
               <span class="badge {% if ingreso.activo %}bg-success{% else %}bg-secondary{% endif %}">
                 {{ ingreso.get_estado_display }}

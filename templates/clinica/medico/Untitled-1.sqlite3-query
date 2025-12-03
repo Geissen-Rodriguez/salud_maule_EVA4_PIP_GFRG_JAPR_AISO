@@ -1,0 +1,6 @@
+-- database: c:\Users\Flowthers\Desktop\Nueva carpeta (2)\salud_maule_EVA4_PIP_GFRG_JAPR_AISO\db.sqlite3
+-- Use the ▷ button in the top right corner to run the entire file.
+SELECT
+    *
+FROM
+    clinica_pacientealergia;

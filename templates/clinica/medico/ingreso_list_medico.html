@@ -42,19 +42,19 @@
                                     {% if ingreso.fichas.exists %}
                                     <a href="{% url 'ficha_list' %}?q={{ ingreso.paciente.rut }}"
                                         class="btn btn-sm btn-info text-white" title="Ver Ficha">
-                                         Ver Ficha
+                                        Ver Ficha
                                     </a>
                                     <!-- Botón para crear nota en la primera ficha activa encontrada -->
                                     {% with ficha=ingreso.fichas.first %}
                                     <a href="{% url 'nota_create' ficha.id %}" class="btn btn-sm btn-primary"
                                         title="Crear Nota">
-                                         Nota
+                                        Nota
                                     </a>
                                     {% endwith %}
                                     {% else %}
                                     <a href="{% url 'ficha_create' ingreso.id %}" class="btn btn-sm btn-success"
                                         title="Crear Ficha">
-                                         Crear Ficha
+                                        Crear Ficha
                                     </a>
                                     {% endif %}
                                 </div>
