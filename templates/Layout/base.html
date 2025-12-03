@@ -122,8 +122,9 @@
                         </div>
                         <div class="text-white-50 small">
                             {{ perfil.cargo|capfirst }}
-                            {% if perfil.cargo == 'medico' and perfil.get_area_actual %}
-                            — Área: {{ perfil.get_area_actual }}
+                            {% if perfil.cargo == 'medico' and perfil.get_centro_actual %}
+                            <br>
+                            {{ perfil.get_centro_actual }} — {{ perfil.get_area_actual }}
                             {% endif %}
                         </div>
                         {% endwith %}

@@ -1,17 +1,25 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+import logging
+logger = logging.getLogger(__name__)
 
-from .models import Paciente, IngresoPaciente, FichaClinica, NotaMedica, CategoriaAlergia, Alergia, PacienteAlergia
+from .models import (
+    Paciente, IngresoPaciente, FichaClinica, NotaMedica,
+    CategoriaAlergia, Alergia, PacienteAlergia
+)
 from .forms import PacienteForm, IngresoForm, FichaForm, NotaForm, PacienteClinicalForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 import json
+from io import BytesIO
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 # --- Mixins de Permisos ---
 
@@ -39,7 +47,6 @@ class PacienteListView(LoginRequiredMixin, ListView):
     model = Paciente
     template_name = 'clinica/pacientes/paciente_list.html'
     context_object_name = 'pacientes'
-    paginate_by = 10
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -127,7 +134,6 @@ class FichaListView(LoginRequiredMixin, SoloMedicoMixin, ListView):
 class FichaCreateView(LoginRequiredMixin, SoloMedicoMixin, CreateView):
     model = FichaClinica
     form_class = FichaForm
-    template_name = 'clinica/fichas/ficha_form.html'
     template_name = 'clinica/fichas/ficha_form.html'
 
     def get_success_url(self):
@@ -258,3 +264,223 @@ def eliminar_alergia_paciente(request):
         return JsonResponse({'status': 'success', 'message': 'Alergia eliminada correctamente'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+import logging
+from io import BytesIO
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+# Importa tu modelo y Mixins personalizados
+from .models import FichaClinica
+# Asume que SoloMedicoMixin y LoginRequiredMixin están definidos o importados
+# Si no existen, necesitarás definirlos o eliminarlos y usar solo LoginRequiredMixin.
+# from tu_app.mixins import SoloMedicoMixin  # Descomenta si usas un archivo mixins.py
+
+# Se importa xhtml2pdf solo dentro de la función para manejo de errores
+# from xhtml2pdf import pisa  # No es necesario aquí si lo importas dentro de render_to_pdf
+
+logger = logging.getLogger(__name__)
+
+# NOTA: Reemplaza 'SoloMedicoMixin' con la importación real o quítalo
+# si no está definido en tu proyecto. Para este ejemplo, asumiremos que existe.
+
+# ... [Tus importaciones previas] ...
+from .models import (
+    Paciente, IngresoPaciente, FichaClinica, NotaMedica,
+    CategoriaAlergia, Alergia, PacienteAlergia # Asegúrate de importar PacienteAlergia
+)
+# ... [Tus Mixins y otras Vistas] ...
+
+import logging
+from io import BytesIO
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
+# Importa tus modelos necesarios
+from .models import (
+    Paciente, IngresoPaciente, FichaClinica, NotaMedica,
+    CategoriaAlergia, Alergia, PacienteAlergia
+)
+
+# Importa xhtml2pdf (necesaria para render_to_pdf)
+from xhtml2pdf import pisa 
+
+# Importa tus Mixins de Permisos (asumiendo que están en este archivo)
+from django.contrib.auth.mixins import UserPassesTestMixin
+class SoloMedicoMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and \
+               hasattr(self.request.user, 'perfil_salud') and \
+               self.request.user.perfil_salud.cargo == 'medico'
+# Fin de Mixins de Permisos
+
+logger = logging.getLogger(__name__)
+import logging
+from io import BytesIO
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+from django.shortcuts import get_object_or_404
+# from django.db.models import Q # No es necesario para esta vista
+
+# Importa tus modelos necesarios
+from .models import (
+    FichaClinica, NotaMedica, PacienteAlergia
+)
+
+# Importa xhtml2pdf (asumiendo que está disponible)
+from xhtml2pdf import pisa 
+
+logger = logging.getLogger(__name__)
+
+# --- Mixin de Permisos (Incluido aquí para que sea 'copiar y pegar') ---
+class SoloMedicoMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and \
+               hasattr(self.request.user, 'perfil_salud') and \
+               self.request.user.perfil_salud.cargo == 'medico'
+
+import logging
+from io import BytesIO
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+from django.shortcuts import get_object_or_404
+# from django.db.models import Q # No es necesario para esta vista
+
+# Importa tus modelos necesarios
+from .models import (
+    FichaClinica, NotaMedica, PacienteAlergia,
+    Paciente, IngresoPaciente, CategoriaAlergia, Alergia # Incluimos todos los modelos referenciados
+)
+
+# Importa xhtml2pdf 
+from xhtml2pdf import pisa 
+
+logger = logging.getLogger(__name__)
+
+# --- Mixin de Permisos (Requerido para que la vista funcione) ---
+class SoloMedicoMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated and \
+               hasattr(self.request.user, 'perfil_salud') and \
+               self.request.user.perfil_salud.cargo == 'medico'
+
+# --- VISTA PARA GENERAR EL PDF ---
+# ... (otras importaciones) ...
+from django.utils import timezone
+# --- VISTA PARA GENERAR EL PDF ---
+class FichaPDFView(LoginRequiredMixin, SoloMedicoMixin, DetailView):
+    """
+    Vista que genera un PDF de una Ficha Clínica específica, incluyendo
+    todos los datos del paciente, alergias y notas médicas.
+    """
+    model = FichaClinica
+    template_name = 'clinica/fichas/ficha_pdf.html' 
+    context_object_name = 'ficha'
+
+    # 1. OPTIMIZACIÓN: Precarga las relaciones clave (ingreso, paciente, médico responsable)
+    def get_queryset(self):
+        """
+        Precarga las relaciones ForeignKey para el objeto principal.
+        """
+        # Con esto, 'self.object' ya tiene 'ingreso' y 'medico_responsable' cargados.
+        return FichaClinica.objects.select_related(
+            'ingreso', 
+            'ingreso__paciente',
+            'medico_responsable'
+        )
+
+    def get_context_data(self, **kwargs):
+        """
+        Añade el objeto Paciente, Alergias, Notas Médicas, y el Perfil del Médico Logueado al contexto.
+        """
+        # 1. Obtiene el contexto base
+        context = super().get_context_data(**kwargs)
+        
+        ficha = self.object 
+        
+        # 2. Obtener el objeto Paciente asociado (ya precargado gracias a get_queryset)
+        paciente = ficha.ingreso.paciente # Acceso sin consulta adicional
+        
+        # 3. Obtener las Alergias del Paciente (relación ManyToMany through)
+        # Se sigue usando select_related para optimizar la carga de las relaciones de Alergia
+        alergias_paciente = PacienteAlergia.objects.filter(paciente=paciente).select_related('alergia', 'alergia__categoria')
+        
+        # 4. Obtener las Notas Médicas 
+        notas_medicas = NotaMedica.objects.filter(ficha=ficha).order_by('fecha_hora')
+
+        # 5. Añadir los datos del paciente y clínicos al contexto
+        context['paciente'] = paciente
+        context['alergias_paciente'] = alergias_paciente
+        context['notas_medicas'] = notas_medicas 
+        
+        # 6. INYECCIONES CLAVE PARA EL PDF
+        context['perfil'] = self.request.user.perfil_salud
+        context['now'] = timezone.now()
+        
+        return context
+
+    def render_to_pdf(self, template_src, context_dict=None):
+        """
+        Renderiza la plantilla a bytes PDF y devuelve los bytes o None si hay error.
+        """
+        context_dict = context_dict or {}
+        try:
+            template = get_template(template_src)
+            html = template.render(context_dict)
+        except Exception as e:
+            logger.exception("Error al renderizar plantilla %s: %s", template_src, e)
+            return None
+
+        result = BytesIO()
+        # UTF-8 es clave para acentos
+        pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+        
+        if pisa_status.err:
+            logger.error("Error de xhtml2pdf pisa: %s", pisa_status.err)
+            return None
+        
+        return result.getvalue()
+
+    def get(self, request, *args, **kwargs):
+        """
+        Sobrescribe el método GET para generar y servir el PDF.
+        """
+        # Llama a get_queryset y get_object
+        self.object = self.get_object() 
+        
+        context = self.get_context_data(object=self.object) 
+        pdf_bytes = self.render_to_pdf(self.template_name, context)
+        
+        if not pdf_bytes:
+            return HttpResponse(
+                "Error al generar el PDF. Revisa los logs del servidor para más detalles.",
+                status=400
+            )
+
+        try:
+            # Crea un nombre de archivo basado en el RUT del paciente
+            filename = f"Ficha_{self.object.ingreso.paciente.rut}.pdf"
+        except AttributeError:
+            logger.warning("No se pudo obtener el RUT del paciente. Usando nombre genérico.")
+            filename = f"Ficha_{self.object.pk}.pdf"
+            
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{filename}"'
+        return response

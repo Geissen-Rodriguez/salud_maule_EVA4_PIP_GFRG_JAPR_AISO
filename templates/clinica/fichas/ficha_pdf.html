@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ficha Clínica N° {{ ficha.pk }}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        /* Estilos CSS base */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            margin: 0;
+            padding: 20px;
+            background: white;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 16pt;
+        }
+
+        h2 {
+            font-size: 13pt;
+        }
+
+        h3 {
+            font-size: 11pt;
+        }
+
+        section {
+            margin-bottom: 15px;
+        }
+
+        /* Estilo para simular un grid simple (útil para datos en fila en PDF) */
+        .grid-3 {
+            display: table;
+            width: 100%;
+            border-spacing: 10px 0;
+        }
+
+        .grid-3>div {
+            display: table-cell;
+            width: 33.33%;
+            padding: 5px 0;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        /* Estilos para las notas médicas */
+        blockquote {
+            border-left: 3px solid #007bff;
+            /* Color azul */
+            margin: 10px 0 10px 10px;
+            padding: 5px 10px;
+            font-size: 9pt;
+            background-color: #f6faff;
+            /* Azul muy claro */
+            font-style: italic;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px dashed #ccc;
+            margin: 20px 0;
+        }
+
+        /* Estilo para la sección de exportación/validación */
+        .export-info {
+            margin-top: 40px;
+            border-top: 1px solid #888;
+            padding-top: 15px;
+            font-size: 9pt;
+            overflow: hidden;
+        }
+
+        .export-left {
+            width: 49%;
+            float: left;
+        }
+
+        .export-right {
+            width: 49%;
+            float: right;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Ficha Clínica N° {{ ficha.pk }}</h1>
+
+    <section>
+        <h2>👤 Datos Personales y Contacto</h2>
+        <div class="grid-3">
+            <div><strong>Nombre:</strong> {{ paciente.nombres }} {{ paciente.apellidos }}</div>
+            <div><strong>RUT:</strong> {{ paciente.rut }}</div>
+            <div><strong>Fecha Nac.:</strong> {{ paciente.fecha_nacimiento|date:"d/m/Y" }} ({{ paciente.edad }} años)
+            </div>
+        </div>
+        <div class="grid-3">
+            <div><strong>Sexo:</strong> {{ paciente.get_sexo_display|default:"N/A" }}</div>
+            <div><strong>Teléfono:</strong> {{ paciente.telefono|default:"N/A" }}</div>
+            <div><strong>Correo:</strong> {{ paciente.correo|default:"N/A" }}</div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>📊 Datos Clínicos</h2>
+        <div class="grid-3">
+            <div><strong>Peso:</strong> {{ paciente.peso|default:"N/A" }} kg</div>
+            <div><strong>Estatura:</strong> {{ paciente.estatura|default:"N/A" }} cm</div>
+            <div><strong>Grupo Sanguíneo:</strong> {{ paciente.get_grupo_sanguineo_display|default:"N/A" }}</div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>🚨 Alergias</h2>
+
+        {% if alergias_paciente %}
+        <h3>Alergias Estructuradas:</h3>
+        <ul>
+            {% for pa in alergias_paciente %}
+            <li>
+                <strong>{{ pa.alergia.ale_nombre }}</strong> (Categoría: {{ pa.alergia.categoria.nombre_categoria }})
+                {% if pa.observaciones %} - Observaciones: {{ pa.observaciones }}{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No hay alergias registradas formalmente.</p>
+        {% endif %}
+
+        <h3>Alergias en Texto Libre (Manual):</h3>
+        {% if paciente.alergias_libre %}
+        <p>{{ paciente.alergias_libre|linebreaksbr }}</p>
+        {% else %}
+        <p>No hay información adicional de alergias en texto libre.</p>
+        {% endif %}
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>🩺 Ficha Clínica (N° {{ ficha.pk }})</h2>
+        <p><strong>Diagnóstico:</strong> {{ ficha.diagnostico|linebreaksbr|default:"No registrado." }}</p>
+
+        <p><strong>Resumen de Tratamiento:</strong>
+            {{ ficha.resumen_tratamiento|linebreaksbr|default:"No registrado." }}
+        </p>
+
+        <p><strong>Estado Actual:</strong> {{ ficha.get_estado_actual_display }}</p>
+
+        <p><strong>Médico Responsable:</strong> {{ ficha.medico_responsable }}</p>
+    </section>
+
+    {% if notas_medicas %}
+    <hr>
+    <section>
+        <h2>📋 Notas Médicas</h2>
+        {% for nota in notas_medicas %}
+        <p style="font-size: 10pt; margin-bottom: 3px;">
+            <strong>Nota del {{ nota.fecha_hora|date:"d/m/Y H:i" }} por Dr(a). {{ nota.medico.apellidos }}:</strong>
+        </p>
+        <blockquote>{{ nota.detalle|linebreaksbr }}</blockquote>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <hr>
+
+    <section class="export-info">
+        <div class="export-left">
+            <p style="margin: 0;"><strong>Documento generado por:</strong></p>
+            <div style="font-weight: bold; font-size: 10pt; margin-bottom: 5px;">
+                {{ perfil.nombres }} {{ perfil.apellidos }}
+            </div>
+            <div style="font-size: 8pt; color: #555;">
+                {{ perfil.cargo|capfirst }}
+                {% if perfil.cargo == 'medico' and perfil.get_centro_actual %}
+                <br>
+                {{ perfil.get_centro_actual }} — {{ perfil.get_area_actual }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="export-right">
+            <p style="margin: 0;"><strong>Fecha y Hora de Impresión:</strong></p>
+            <div style="font-weight: bold; font-size: 10pt;">{{ now|date:"d/m/Y H:i:s" }}</div>
+            <p style="font-size: 8pt; color: #555;">Esta copia representa el estado de la ficha al momento de la
+                exportación.</p>
+        </div>
+    </section>
+
+</body>
+
+</html>

@@ -68,7 +68,7 @@ class PacienteClinicalForm(forms.ModelForm):
             'peso': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'estatura': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'grupo_sanguineo': forms.Select(attrs={'class': 'form-select'}),
-            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fecha_nacimiento': forms.SelectDateWidget(years=range(1920, 2026), attrs={'class': 'form-select', 'style': 'width: auto; display: inline-block; margin-right: 5px;'}),
             'fecha_ingreso': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'detalles_alta': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'alergias_libre': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),

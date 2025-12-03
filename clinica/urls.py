@@ -14,7 +14,10 @@ from .views import (
     ReporteMedicosView,
 
     # API Views
-    get_alergias_by_categoria, agregar_alergia_paciente, eliminar_alergia_paciente
+    get_alergias_by_categoria, agregar_alergia_paciente, eliminar_alergia_paciente,
+
+    # PDF View
+    FichaPDFView
 )
 
 urlpatterns = [
@@ -88,4 +91,7 @@ urlpatterns = [
     path('api/alergias/categoria/<int:categoria_id>/', get_alergias_by_categoria, name='api_alergias_categoria'),
     path('api/alergias/agregar/', agregar_alergia_paciente, name='api_alergias_agregar'),
     path('api/alergias/eliminar/', eliminar_alergia_paciente, name='api_alergias_eliminar'),
+
+    # PDF Export
+    path('fichas/<int:pk>/pdf/', FichaPDFView.as_view(), name='ficha_pdf'),
 ]

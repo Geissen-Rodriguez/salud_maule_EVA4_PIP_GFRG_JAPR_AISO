@@ -51,3 +51,10 @@ class PersonalSalud(models.Model):
         if asignacion and asignacion.area:
             return asignacion.area.nombre
         return None
+
+    def get_centro_actual(self):
+        # Retorna el nombre del centro de la asignación activa, si existe.
+        asignacion = self.asignaciones.filter(activo=True).first()
+        if asignacion and asignacion.centro:
+            return asignacion.centro.nombre
+        return None

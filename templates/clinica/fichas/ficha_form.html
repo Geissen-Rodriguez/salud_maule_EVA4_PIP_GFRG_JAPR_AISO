@@ -8,7 +8,8 @@
     <div class="col-md-6">
       <div class="card shadow mb-4">
         <div class="card-header py-3 bg-info text-white">
-          <h6 class="m-0 font-weight-bold">Datos Clínicos del Paciente: {{ clinical_form.instance.nombres }} {{ clinical_form.instance.apellidos }}</h6>
+          <h6 class="m-0 font-weight-bold">Datos Clínicos del Paciente: {{ clinical_form.instance.nombres }} {{
+            clinical_form.instance.apellidos }}</h6>
         </div>
         <div class="card-body">
           <form method="post" id="clinicalForm">
@@ -64,19 +65,18 @@
 
             <!-- Lista de Alergias Actuales -->
             <div id="listaAlergias" class="mb-3">
-                {% if clinical_form.instance.alergias.exists %}
-                    {% for alergia in clinical_form.instance.alergias.all %}
-                        <span class="badge bg-warning text-dark me-1 mb-1" id="badge-alergia-{{ alergia.id }}">
-                            {{ alergia.ale_nombre }}
-                            <i class="fas fa-times ms-1 text-danger cursor-pointer btn-eliminar-alergia" 
-                               data-paciente-id="{{ clinical_form.instance.id }}" 
-                               data-alergia-id="{{ alergia.id }}" 
-                               style="cursor: pointer;"></i>
-                        </span>
-                    {% endfor %}
-                {% else %}
-                    <span id="no-alergias-msg" class="text-muted small">Sin alergias registradas.</span>
-                {% endif %}
+              {% if clinical_form.instance.alergias.exists %}
+              {% for alergia in clinical_form.instance.alergias.all %}
+              <span class="badge bg-warning text-dark me-1 mb-1" id="badge-alergia-{{ alergia.id }}">
+                {{ alergia.ale_nombre }}
+                <i class="fas fa-times ms-1 text-danger cursor-pointer btn-eliminar-alergia"
+                  data-paciente-id="{{ clinical_form.instance.id }}" data-alergia-id="{{ alergia.id }}"
+                  style="cursor: pointer;"></i>
+              </span>
+              {% endfor %}
+              {% else %}
+              <span id="no-alergias-msg" class="text-muted small">Sin alergias registradas.</span>
+              {% endif %}
             </div>
 
             <div class="mb-3">
@@ -108,8 +108,13 @@
     <!-- Columna Derecha: Información de Referencia -->
     <div class="col-md-6">
       <div class="card shadow mb-4">
-        <div class="card-header py-3 bg-secondary text-white">
+        <div class="card-header py-3 bg-secondary text-white d-flex justify-content-between align-items-center">
           <h6 class="m-0 font-weight-bold">Resumen del Paciente</h6>
+          {% if object %}
+          <a href="{% url 'ficha_pdf' object.pk %}" class="btn btn-sm btn-light text-dark" target="_blank">
+            <i class="fas fa-file-pdf"></i> Exportar PDF
+          </a>
+          {% endif %}
         </div>
         <div class="card-body">
           <p><strong>RUT:</strong> {{ clinical_form.instance.rut }}</p>

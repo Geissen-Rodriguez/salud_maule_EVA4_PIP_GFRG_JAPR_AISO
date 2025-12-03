@@ -1,56 +1,89 @@
 {% extends 'layout/base.html' %}
+
 {% block title %}Mis Fichas Clínicas{% endblock %}
 
 {% block content %}
-<h2> Mis Fichas Clínicas Asignadas</h2>
-<p class="text-muted">Visualizando **{{ fichas.count }}** fichas donde usted es el médico responsable. (Acceso solo para
-    Médico)</p>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mis Fichas Clínicas Asignadas</h2>
+    </div>
 
-{% if fichas %}
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-secondary">
-            <tr>
-                <th>ID Ficha</th>
-                <th>Paciente</th>
-                <th>RUT</th>
-                <th>Centro/Área</th>
-                <th>Estado Ficha</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ficha in fichas %}
-            <tr>
-                <td>#{{ ficha.pk }}</td>
+    <div class="card shadow">
+        <div class="card-body">
+            <p class="text-muted mb-3">Visualizando <strong>{{ fichas.count }}</strong> fichas donde usted es el médico
+                responsable.</p>
 
-                <td>{{ ficha.ingreso.paciente.nombres }} {{ ficha.ingreso.paciente.apellidos }}</td>
-                <td>{{ ficha.ingreso.paciente.rut }}</td>
-
-                <td>{{ ficha.ingreso.centro.nombre }} / {{ ficha.ingreso.area.nombre }}</td>
-
-                <td>
-                    <span class="badge bg-info text-dark">{{ ficha.get_estado_actual_display }}</span>
-                </td>
-
-                <td>
-                    <a href="{% url 'ficha_edit' ficha.pk %}" class="btn btn-sm btn-primary me-2">
-                        Ver/Editar Ficha
-                    </a>
-
-                    <a href="{% url 'nota_create' ficha_id=ficha.pk %}" class="btn btn-sm btn-success">
-                        Añadir Nota
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <div class="table-responsive">
+                <table id="tablaFichas" class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID Ficha</th>
+                            <th>Paciente</th>
+                            <th>RUT</th>
+                            <th>Centro/Área</th>
+                            <th>Estado Ficha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ficha in fichas %}
+                        <tr>
+                            <td>#{{ ficha.pk }}</td>
+                            <td>{{ ficha.ingreso.paciente.nombres }} {{ ficha.ingreso.paciente.apellidos }}</td>
+                            <td>{{ ficha.ingreso.paciente.rut }}</td>
+                            <td>{{ ficha.ingreso.centro.nombre }} / {{ ficha.ingreso.area.nombre }}</td>
+                            <td>
+                                <span class="badge bg-info text-dark">{{ ficha.get_estado_actual_display }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'ficha_edit' ficha.pk %}" class="btn btn-sm btn-primary"
+                                        title="Ver/Editar Ficha">
+                                        Ver/Editar
+                                    </a>
+                                    <a href="{% url 'nota_create' ficha_id=ficha.pk %}" class="btn btn-sm btn-success"
+                                        title="Añadir Nota">
+                                        Nota
+                                    </a>
+                                    <a href="{% url 'ficha_pdf' ficha.pk %}" class="btn btn-sm btn-danger"
+                                        title="Exportar a PDF" target="_blank">
+                                        PDF
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-{% else %}
-<div class="alert alert-info mt-3" role="alert">
-    No tiene fichas clínicas asignadas como médico responsable.
-</div>
-{% endif %}
 
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#tablaFichas').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            order: [[0, 'desc']], // Ordenar por ID descendente
+            pageLength: 25,
+            responsive: true,
+            columnDefs: [
+                { orderable: false, targets: 5 } // No ordenar por columna de acciones
+            ]
+        });
+    });
+</script>
 {% endblock %}
