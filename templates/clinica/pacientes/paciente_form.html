@@ -9,7 +9,7 @@
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            
+
             <button type="submit" class="btn btn-success">
                 Guardar
             </button>
@@ -19,4 +19,56 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Formateo de RUT
+        const rutInput = document.getElementById('id_rut');
+        if (rutInput) {
+            rutInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/[^0-9kK]/g, '');
+                if (value.length > 1) {
+                    const dv = value.slice(-1);
+                    const rut = value.slice(0, -1);
+                    let formattedRut = '';
+                    for (let i = rut.length - 1, j = 1; i >= 0; i--, j++) {
+                        formattedRut = rut.charAt(i) + formattedRut;
+                        if (j % 3 === 0 && i > 0) {
+                            formattedRut = '.' + formattedRut;
+                        }
+                    }
+                    e.target.value = formattedRut + '-' + dv;
+                } else {
+                    e.target.value = value;
+                }
+            });
+        }
+
+        // Validación de Teléfono (Solo números y longitud máxima)
+        const telefonoInput = document.getElementById('id_telefono');
+        if (telefonoInput) {
+            telefonoInput.placeholder = "Ej: 912345678";
+            telefonoInput.maxLength = 9;
+            telefonoInput.addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                if (e.target.value.length > 0 && e.target.value[0] !== '9') {
+                    // Si el primer dígito no es 9, lo limpiamos (opcional, o mostrar error)
+                    // Para ser menos intrusivo, solo permitimos escribir. La validación final la hace el backend o al salir del campo.
+                }
+            });
+        }
+
+        // Validación de Nombres y Apellidos (Solo letras)
+        const textInputs = [document.getElementById('id_nombres'), document.getElementById('id_apellidos')];
+        textInputs.forEach(function (input) {
+            if (input) {
+                input.addEventListener('input', function (e) {
+                    e.target.value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                });
+            }
+        });
+    });
+</script>
 {% endblock %}

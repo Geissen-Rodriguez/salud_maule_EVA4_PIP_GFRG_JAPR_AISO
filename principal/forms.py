@@ -37,9 +37,6 @@ class CustomPasswordResetForm(PasswordResetForm):
             pass
         return (users_by_auth_email | users_by_perfil_email).distinct()
 
-    # ----------------------------------------------------
-    # II. clean_email() - LA VALIDACIÓN (¡LA PIEZA FALTANTE!)
-    # ----------------------------------------------------
     def clean_email(self):
         email = self.cleaned_data["email"]
         users = self.get_users(email)

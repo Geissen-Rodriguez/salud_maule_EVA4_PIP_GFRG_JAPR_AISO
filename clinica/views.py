@@ -186,21 +186,29 @@ class FichaUpdateView(LoginRequiredMixin, SoloMedicoMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ficha = self.object
-        if self.request.POST:
-            context['clinical_form'] = PacienteClinicalForm(self.request.POST, instance=ficha.ingreso.paciente)
-        else:
-            context['clinical_form'] = PacienteClinicalForm(instance=ficha.ingreso.paciente)
+        
+        if 'clinical_form' not in context:
+            if self.request.POST:
+                context['clinical_form'] = PacienteClinicalForm(self.request.POST, instance=ficha.ingreso.paciente)
+            else:
+                context['clinical_form'] = PacienteClinicalForm(instance=ficha.ingreso.paciente)
         
         context['categorias_alergia'] = CategoriaAlergia.objects.all()
         return context
 
-    def form_valid(self, form):
-        context = self.get_context_data()
-        clinical_form = context['clinical_form']
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        clinical_form = PacienteClinicalForm(request.POST, instance=self.object.ingreso.paciente)
         
-        if clinical_form.is_valid():
+        if form.is_valid() and clinical_form.is_valid():
             clinical_form.save()
-            
+            return self.form_valid(form)
+        else:
+            return self.render_to_response(self.get_context_data(form=form, clinical_form=clinical_form))
+
+    def form_valid(self, form):
+        # clinical_form is already saved in post
         return super().form_valid(form)
 
 class NotaCreateView(LoginRequiredMixin, SoloMedicoMixin, CreateView):

@@ -4,25 +4,27 @@
 {% block content %}
 <div class="container-fluid">
   <div class="row">
-    <!-- Columna Izquierda: Datos Clínicos del Paciente -->
     <div class="col-md-6">
       <div class="card shadow mb-4">
         <div class="card-header py-3 bg-info text-white">
-          <h6 class="m-0 font-weight-bold">Datos Clínicos del Paciente: {{ clinical_form.instance.nombres }} {{
-            clinical_form.instance.apellidos }}</h6>
+          <h6 class="m-0 font-weight-bold">Datos Clínicos del Paciente: {{ clinical_form.instance.nombres }}
+          </h6>
         </div>
         <div class="card-body">
           <form method="post" id="clinicalForm">
             {% csrf_token %}
-            <!-- Renderizamos los campos del formulario clínico manualmente para mejor control -->
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="{{ clinical_form.peso.id_for_label }}">Peso (kg)</label>
                 {{ clinical_form.peso }}
+                <div class="text-danger small error-message" data-field="peso"></div>
+                {{ clinical_form.peso.errors }}
               </div>
               <div class="col-md-6 mb-3">
                 <label for="{{ clinical_form.estatura.id_for_label }}">Estatura (m)</label>
                 {{ clinical_form.estatura }}
+                <div class="text-danger small error-message" data-field="estatura"></div>
+                {{ clinical_form.estatura.errors }}
               </div>
             </div>
             <div class="row">
@@ -39,23 +41,12 @@
             <hr>
             <h6 class="font-weight-bold text-primary">Gestión de Alergias</h6>
 
-            <!-- Selección de Alergias -->
             <div class="row mb-3">
               <div class="col-md-5">
                 <label>Categoría</label>
-                <select id="categoriaSelect" class="form-control">
-                  <option value="">Seleccione Categoría...</option>
-                  {% for cat in categorias_alergia %}
-                  <option value="{{ cat.id }}">{{ cat.nombre_categoria }}</option>
-                  {% endfor %}
-                </select>
+
               </div>
-              <div class="col-md-5">
-                <label>Alergia</label>
-                <select id="alergiaSelect" class="form-control" disabled>
-                  <option value="">Seleccione Alergia...</option>
-                </select>
-              </div>
+
               <div class="col-md-2 d-flex align-items-end">
                 <button type="button" id="btnAgregarAlergia" class="btn btn-success btn-block">
                   <i class="fas fa-plus"></i>
@@ -63,7 +54,6 @@
               </div>
             </div>
 
-            <!-- Lista de Alergias Actuales -->
             <div id="listaAlergias" class="mb-3">
               {% if clinical_form.instance.alergias.exists %}
               {% for alergia in clinical_form.instance.alergias.all %}
@@ -85,18 +75,16 @@
             </div>
 
             <hr>
-            <!-- Campos restantes del formulario clínico -->
             <div class="mb-3">
               <label for="{{ clinical_form.detalles_alta.id_for_label }}">Detalles de Alta (Antecedentes
                 previos)</label>
               {{ clinical_form.detalles_alta }}
             </div>
 
-            <!-- Renderizamos el formulario principal de la Ficha (diagnóstico, etc) -->
             <h6 class="font-weight-bold text-primary mt-4">Datos de la Ficha</h6>
             {{ form.as_p }}
 
-            <button type="submit" class="btn btn-primary btn-block mt-3">
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-block mt-3">
               <i class="fas fa-save"></i> Guardar Ficha y Datos Clínicos
             </button>
             <a href="{% url 'ficha_list' %}" class="btn btn-secondary btn-block">Cancelar</a>
@@ -105,7 +93,6 @@
       </div>
     </div>
 
-    <!-- Columna Derecha: Información de Referencia -->
     <div class="col-md-6">
       <div class="card shadow mb-4">
         <div class="card-header py-3 bg-secondary text-white d-flex justify-content-between align-items-center">
@@ -128,111 +115,198 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const categoriaSelect = document.getElementById('categoriaSelect');
-    const alergiaSelect = document.getElementById('alergiaSelect');
-    const btnAgregar = document.getElementById('btnAgregarAlergia');
-    const pacienteId = "{{ clinical_form.instance.id }}";
+  document.addEventListener("DOMContentLoaded", function () {
 
-    // Cargar alergias al cambiar categoría
-    categoriaSelect.addEventListener('change', function () {
-      const catId = this.value;
-      alergiaSelect.innerHTML = '<option value="">Seleccione Alergia...</option>';
-      alergiaSelect.disabled = true;
+    const pesoInput = document.getElementById("{{ clinical_form.peso.id_for_label }}");
+    const estaturaInput = document.getElementById("{{ clinical_form.estatura.id_for_label }}");
+    const clinicalForm = document.getElementById("clinicalForm");
 
-      if (catId) {
-        fetch(`/api/alergias/categoria/${catId}/`)
-          .then(response => response.json())
-          .then(data => {
-            data.forEach(alergia => {
-              const option = document.createElement('option');
-              option.value = alergia.id;
-              option.textContent = alergia.ale_nombre;
-              alergiaSelect.appendChild(option);
-            });
-            alergiaSelect.disabled = false;
-          });
+    // --- Lógica de Manejo de Input Común ---
+    function cleanNumericInput(value) {
+      // 1. Reemplazar coma por punto y eliminar caracteres no numéricos
+      let v = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+
+      // 2. Asegurar que no haya múltiples puntos, manteniendo solo el primero
+      const parts = v.split(".");
+      if (parts.length > 2) {
+        // Reconstruir la cadena tomando la parte entera y el primer segmento decimal
+        v = parts[0] + "." + parts.slice(1).join("");
       }
-    });
+      return v;
+    }
 
-    // Agregar Alergia
-    btnAgregar.addEventListener('click', function () {
-      const alergiaId = alergiaSelect.value;
-      const alergiaNombre = alergiaSelect.options[alergiaSelect.selectedIndex]?.text;
+    // ----------------------------------------------------
+    // HANDLER ESPECÍFICO: PESO (3 ENTEROS + 1 DECIMAL) - VERSIÓN FINAL
+    // Permite 123 -> 12.3 y 1234 -> 123.4 (desplazamiento).
+    // Si ya hay un punto (22.3), permite añadir un dígito para desplazarlo (223.4).
+    // ----------------------------------------------------
+    function handlePesoInput() {
+      let v = cleanNumericInput(pesoInput.value);
 
-      if (alergiaId && pacienteId) {
-        fetch('/api/alergias/agregar/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: JSON.stringify({
-            paciente_id: pacienteId,
-            alergia_id: alergiaId
-          })
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === 'success') {
-              // Agregar badge visualmente
-              const lista = document.getElementById('listaAlergias');
+      // Si el valor ya contiene un punto, lo separamos.
+      const parts = v.split(".");
+      let newValue;
 
-              // Remove empty message if exists
-              const emptyMsg = document.getElementById('no-alergias-msg');
-              if (emptyMsg) emptyMsg.remove();
+      if (parts.length > 1) {
+        // CASO A: HAY PUNTO (Ingreso manual o resultado del desplazamiento anterior)
 
-              // Verificar si ya existe para no duplicar visualmente (aunque el backend lo maneje)
-              if (!document.getElementById(`badge-alergia-${alergiaId}`)) {
-                const badge = document.createElement('span');
-                badge.className = 'badge bg-warning text-dark me-1 mb-1';
-                badge.id = `badge-alergia-${alergiaId}`;
-                badge.innerHTML = `${alergiaNombre} <i class="fas fa-times ms-1 text-danger cursor-pointer btn-eliminar-alergia" data-paciente-id="${pacienteId}" data-alergia-id="${alergiaId}" style="cursor: pointer;"></i>`;
-                lista.appendChild(badge);
-              }
-              // Resetear selects
-              alergiaSelect.value = "";
-            } else {
-              alert('Error al agregar alergia: ' + data.message);
-            }
-          });
+        let soloNumeros = parts[0] + parts[1];
+
+        // Limitar a 4 dígitos totales para la restricción 999.9
+        if (soloNumeros.length > 4) {
+          soloNumeros = soloNumeros.substring(soloNumeros.length - 4);
+        }
+
+        const len = soloNumeros.length;
+
+        // Reaplicamos la lógica de desplazamiento a la cadena limpia de 4 dígitos
+        if (len >= 3) {
+          const indicePunto = len - 1;
+          newValue = soloNumeros.substring(0, indicePunto) + "." + soloNumeros.substring(indicePunto, indicePunto + 1);
+        } else {
+          // Si el usuario borra dígitos hasta tener 1 o 2, lo mantenemos sin punto (ej: '22')
+          newValue = soloNumeros;
+        }
+
+      } else {
+        // CASO B: NO HAY PUNTO (Entrada de solo números)
+        let soloNumeros = parts[0];
+
+        // Limitar a 4 dígitos totales
+        if (soloNumeros.length > 4) {
+          soloNumeros = soloNumeros.substring(soloNumeros.length - 4);
+        }
+
+        const len = soloNumeros.length;
+
+        // Desplazamiento automático del punto: Se activa cuando la longitud es >= 3
+        if (len >= 3) {
+          const indicePunto = len - 1;
+          newValue = soloNumeros.substring(0, indicePunto) + "." + soloNumeros.substring(indicePunto);
+        } else {
+          newValue = soloNumeros;
+        }
       }
-    });
 
-    // Event delegation para eliminar alergia
-    document.getElementById('listaAlergias').addEventListener('click', function (e) {
-      if (e.target.classList.contains('btn-eliminar-alergia')) {
-        const pacienteId = e.target.dataset.pacienteId;
-        const alergiaId = e.target.dataset.alergiaId;
-        eliminarAlergia(pacienteId, alergiaId);
+      // 4. Validación del máximo (999.9)
+      const numValue = parseFloat(newValue);
+
+      // Bloquear si excede 999.9
+      if (!isNaN(numValue) && numValue > 999.9) {
+        return;
       }
+
+      // Si el valor es válido ( <= 999.9), actualizamos el input.
+      pesoInput.value = newValue;
+    }
+
+    // ----------------------------------------------------
+    // HANDLER ESPECÍFICO: ESTATURA (1 ENTERO + 2 DECIMALES)
+    // Scenarios: 1 -> 1, 7 -> 1.7, 5 -> 1.75
+    // ----------------------------------------------------
+    function handleEstaturaInput() {
+      let v = cleanNumericInput(estaturaInput.value);
+      const parts = v.split(".");
+
+      if (parts.length === 1) {
+        let soloNumeros = parts[0];
+
+        // Limitar la entrada a 3 dígitos para el desplazamiento (max 2.50)
+        if (soloNumeros.length > 3) {
+          soloNumeros = soloNumeros.substring(soloNumeros.length - 3);
+        }
+
+        // Desplazamiento automático del punto (después del 1er dígito): Se activa cuando la longitud es >= 2
+        if (soloNumeros.length >= 2) {
+          // 17 -> 1.7
+          // 175 -> 1.75
+          v = soloNumeros.substring(0, 1) + "." + soloNumeros.substring(1);
+        } else {
+          // Mantener el valor sin punto (1)
+          v = soloNumeros;
+        }
+      } else {
+        // Hay punto manual, limitar a 2 decimales
+        if (parts[1].length > 2) {
+          parts[1] = parts[1].substring(0, 2);
+          v = parts.join(".");
+        }
+      }
+
+      // Validar máximo (2.50)
+      const numValue = parseFloat(v);
+      if (!isNaN(numValue) && numValue > 2.50) {
+        // Si excede el máximo, no actualiza el valor
+        return;
+      }
+
+      estaturaInput.value = v;
+    }
+
+    // --- Asignación de Eventos de Input ---
+    pesoInput.addEventListener("input", handlePesoInput);
+    estaturaInput.addEventListener("input", handleEstaturaInput);
+
+
+    // --------------------------
+    // LÓGICA DE BLUR (FORMATO FINAL Y VALIDACIÓN DE RANGO)
+    // --------------------------
+    function handleBlur(input, decimals, min, max) {
+      input.addEventListener("blur", () => {
+        let v = input.value.trim();
+        const errorElement = document.querySelector(`.error-message[data-field="${input.id.split('_')[1]}"]`);
+
+        // Limpieza final antes de parsear
+        v = v.replace(/,/g, ".");
+
+        const numValue = parseFloat(v);
+
+        // Validación de rango
+        if (isNaN(numValue) || numValue < min || numValue > max) {
+          if (errorElement) {
+            errorElement.textContent = `Valor debe estar entre ${min.toFixed(decimals)} y ${max.toFixed(decimals)}`;
+          }
+          return;
+        }
+
+        // Aplicar formato de decimales final (e.g., 1.7 -> 1.70, 12 -> 12.0)
+        v = numValue.toFixed(decimals);
+        input.value = v;
+        if (errorElement) {
+          errorElement.textContent = "";
+        }
+      });
+    }
+
+    // Aplica el formato y la validación final al salir
+    handleBlur(pesoInput, 1, 1.0, 999.9);
+    handleBlur(estaturaInput, 2, 0.50, 2.50);
+
+    // --------------------------
+    // VALIDACIÓN FINAL AL ENVIAR
+    // --------------------------
+    clinicalForm.addEventListener("submit", function (e) {
+      // Forzar el evento blur para asegurar que el formato final se aplique antes de enviar
+      pesoInput.focus();
+      pesoInput.blur();
+      estaturaInput.focus();
+      estaturaInput.blur();
+
+      // Revisar si hubo errores de validación en blur
+      const errorPeso = document.querySelector(`.error-message[data-field="peso"]`).textContent;
+      const errorEstatura = document.querySelector(`.error-message[data-field="estatura"]`).textContent;
+
+      if (errorPeso || errorEstatura) {
+        e.preventDefault();
+        alert("Por favor, corrige los errores de formato y rango en Peso/Estatura.");
+        return;
+      }
+
+      // Asegurar formato con punto para el backend
+      pesoInput.value = pesoInput.value.replace(",", ".");
+      estaturaInput.value = estaturaInput.value.replace(",", ".");
     });
   });
-
-  // Función global para eliminar alergia
-  function eliminarAlergia(pacienteId, alergiaId) {
-    if (confirm('¿Está seguro de eliminar esta alergia?')) {
-      fetch('/api/alergias/eliminar/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-          paciente_id: pacienteId,
-          alergia_id: alergiaId
-        })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            const badge = document.getElementById(`badge-alergia-${alergiaId}`);
-            if (badge) badge.remove();
-          } else {
-            alert('Error al eliminar alergia: ' + data.message);
-          }
-        });
-    }
-  }
 </script>
+
 {% endblock %}
